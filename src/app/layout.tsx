@@ -20,7 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`${geistSans.variable} ${geistMono.variable} h-full`}
     >
       <body className="min-h-full antialiased">
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="tj-theme">
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} storageKey="tj-theme">
           {children}
           <Toaster richColors position="top-right" />
         </ThemeProvider>

@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 import { SidebarNav } from "@/components/sidebar-nav";
-import { TopBar } from "@/components/top-bar";
 
 export default async function DashboardLayout({
   children,
@@ -11,13 +11,18 @@ export default async function DashboardLayout({
   const session = await auth();
   if (!session?.user) redirect("/login");
 
+  const accounts = await prisma.tradingAccount.findMany({
+    where: { userId: session.user.id!, isActive: true },
+    select: { id: true, name: true, marketType: true },
+    orderBy: { createdAt: "asc" },
+  });
+
   return (
-    <div className="flex h-screen overflow-hidden">
-      <SidebarNav />
-      <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <TopBar userName={session.user.name} userEmail={session.user.email} />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
-      </div>
+    <div className="flex h-screen overflow-hidden bg-background">
+      <SidebarNav userName={session.user.name} accounts={accounts} />
+      <main className="flex-1 overflow-y-auto">
+        <div className="px-8 py-6">{children}</div>
+      </main>
     </div>
   );
 }

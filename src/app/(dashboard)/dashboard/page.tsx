@@ -3,11 +3,13 @@ import { getDashboardStats, getCalendarHeatmap } from "@/lib/dashboard";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EquityCurve } from "@/components/dashboard/equity-curve";
 import { CalendarHeatmap } from "@/components/dashboard/calendar-heatmap";
-import { TrendingUp, TrendingDown, Activity, BarChart2 } from "lucide-react";
 
 export default async function DashboardPage() {
   const session = await auth();
   const userId = session!.user!.id!;
+
+  const now = new Date();
+  const monthLabel = now.toLocaleString("id-ID", { month: "long", year: "numeric" });
 
   const [stats, heatmap] = await Promise.all([
     getDashboardStats(userId),
@@ -15,48 +17,43 @@ export default async function DashboardPage() {
   ]);
 
   const profitTrend =
-    stats.totalNetProfit > 0
-      ? "positive"
-      : stats.totalNetProfit < 0
-      ? "negative"
-      : "neutral";
+    stats.totalNetProfit > 0 ? "positive" : stats.totalNetProfit < 0 ? "negative" : "neutral";
+
+  const netPnlStr =
+    (stats.totalNetProfit >= 0 ? "+" : "") +
+    "$" +
+    Math.abs(stats.totalNetProfit).toLocaleString("en-US", { maximumFractionDigits: 0 });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 max-w-4xl">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground text-sm">Ringkasan performa trading Anda</p>
+        <h1 className="text-[20px] font-medium">Dashboard</h1>
+        <p className="text-[12px] text-muted-foreground mt-0.5">
+          Semua akun · {monthLabel}
+        </p>
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Metric cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <StatCard
-          label="Total Profit/Loss"
-          value={stats.totalNetProfit.toLocaleString("id-ID", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          })}
-          icon={stats.totalNetProfit >= 0 ? TrendingUp : TrendingDown}
-          trend={profitTrend}
-        />
-        <StatCard
-          label="Win Rate"
-          value={`${stats.winRate.toFixed(1)}%`}
-          subValue={`${stats.totalTrades} trade`}
-          icon={Activity}
+          label="Win rate"
+          value={`${stats.winRate.toFixed(0)}%`}
           trend={stats.winRate >= 50 ? "positive" : "negative"}
         />
         <StatCard
-          label="Profit Factor"
+          label="Profit factor"
           value={stats.profitFactor.toFixed(2)}
-          icon={BarChart2}
           trend={stats.profitFactor >= 1 ? "positive" : "negative"}
         />
         <StatCard
-          label="Total Trade"
+          label="Net P&L"
+          value={netPnlStr}
+          trend={profitTrend}
+        />
+        <StatCard
+          label="Trade"
           value={stats.totalTrades.toString()}
           subValue="trade tertutup"
-          icon={Activity}
         />
       </div>
 
