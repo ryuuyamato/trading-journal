@@ -1,0 +1,170 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tradingAccounts TradingAccount[]
+  tags            Tag[]
+}
+
+// ─── Accounts ────────────────────────────────────────────────────────────────
+
+model TradingAccount {
+  id          String     @id @default(cuid())
+  userId      String
+  name        String
+  broker      String?
+  marketType  MarketType
+  currency    String     @default("USD")
+  balance     Float      @default(0)
+  description String?
+  isActive    Boolean    @default(true)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades Trade[]
+}
+
+// ─── Trades ──────────────────────────────────────────────────────────────────
+
+model Trade {
+  id        String      @id @default(cuid())
+  accountId String
+  symbol    String
+  direction Direction
+  status    TradeStatus @default(OPEN)
+  entryMode EntryMode   @default(SINGLE)
+
+  openTime   DateTime
+  closeTime  DateTime?
+  openPrice  Float
+  closePrice Float?
+
+  // Forex / Commodity
+  lotSize Float?
+  swap    Float  @default(0)
+
+  // Multi-layer (forex/commodity)
+  priceRangeHigh Float?
+  priceRangeLow  Float?
+  layerCount     Int?
+
+  // Stocks (IDX / US)
+  quantity  Float?
+  buyFee    Float  @default(0)
+  sellFee   Float  @default(0)
+  taxAmount Float  @default(0)
+  dividend  Float  @default(0)
+
+  // Crypto futures
+  leverage    Float?
+  marginMode  MarginMode?
+  fundingRate Float?
+
+  // P&L
+  grossProfit Float?
+  commission  Float  @default(0)
+  netProfit   Float?
+  rMultiple   Float?
+  pips        Float?
+
+  // Risk management
+  stopLoss    Float?
+  takeProfit  Float?
+  riskPercent Float?
+
+  // Analysis
+  setup String?
+  notes String?
+
+  // Psychology
+  emotionBefore  Int?
+  emotionAfter   Int?
+  holdingMinutes Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  account     TradingAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  tags        TradeTag[]
+  screenshots TradeScreenshot[]
+}
+
+model TradeScreenshot {
+  id      String  @id @default(cuid())
+  tradeId String
+  url     String
+  caption String?
+
+  trade Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+}
+
+// ─── Tags ────────────────────────────────────────────────────────────────────
+
+model Tag {
+  id     String @id @default(cuid())
+  userId String
+  name   String
+  color  String @default("#6366f1")
+
+  user   User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades TradeTag[]
+
+  @@unique([userId, name])
+}
+
+model TradeTag {
+  tradeId String
+  tagId   String
+
+  trade Trade @relation(fields: [tradeId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tradeId, tagId])
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum MarketType {
+  FOREX
+  COMMODITY
+  STOCK_IDX
+  STOCK_US
+  CRYPTO_SPOT
+  CRYPTO_FUTURES
+}
+
+enum Direction {
+  LONG
+  SHORT
+}
+
+enum TradeStatus {
+  OPEN
+  CLOSED
+}
+
+enum EntryMode {
+  SINGLE
+  MULTI_LAYER
+}
+
+enum MarginMode {
+  ISOLATED
+  CROSS
+}
