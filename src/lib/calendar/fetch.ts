@@ -1,3 +1,5 @@
+import { unstable_cache } from "next/cache";
+
 const FF_BASE = (process.env.FF_FEED_BASE ?? "https://nfs.faireconomy.media").trim().replace(/\/$/, "");
 
 export type FeedWeek = "thisweek" | "nextweek";
@@ -13,14 +15,13 @@ export interface FfEvent {
   actual?: string;
 }
 
-export async function fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
+async function _fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
   const url = `${FF_BASE}/ff_calendar_${week}.json`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
-      // User-Agent yang lebih umum agar tidak diblokir
       headers: { "User-Agent": "Mozilla/5.0 (compatible; TradingJournal/1.0)" },
       cache: "no-store",
     });
@@ -31,6 +32,14 @@ export async function fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
     return data;
   } catch (err) {
     clearTimeout(timeout);
-    throw err; // Biarkan error naik ke atas, jangan sembunyikan
+    throw err;
   }
 }
+
+// Cache successful responses for 1 hour.
+// unstable_cache does NOT cache thrown errors, so 429/404 will be retried next request.
+export const fetchFeed = unstable_cache(
+  _fetchFeed,
+  ["ff-calendar"],
+  { revalidate: 3600, tags: ["ff-calendar"] },
+);
