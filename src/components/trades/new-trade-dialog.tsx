@@ -95,15 +95,32 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
       return isNaN(v) ? null : v;
     };
 
+    const openTimeStr = get("openTime");
+    const openPriceStr = get("openPrice");
+
+    if (!openTimeStr) { toast.error("Waktu buka wajib diisi"); return; }
+    if (!openPriceStr) { toast.error("Harga buka wajib diisi"); return; }
+
+    let openTimeISO: string;
+    try { openTimeISO = new Date(openTimeStr).toISOString(); }
+    catch { toast.error("Format waktu buka tidak valid"); return; }
+
+    const closeTimeStr = get("closeTime");
+    let closeTimeISO: string | null = null;
+    if (closeTimeStr) {
+      try { closeTimeISO = new Date(closeTimeStr).toISOString(); }
+      catch { toast.error("Format waktu tutup tidak valid"); return; }
+    }
+
     const data: Record<string, unknown> = {
       accountId,
       symbol: get("symbol").toUpperCase(),
       direction,
       status,
       entryMode,
-      openTime: new Date(get("openTime")).toISOString(),
-      openPrice: parseFloat(get("openPrice")),
-      closeTime: get("closeTime") ? new Date(get("closeTime")).toISOString() : null,
+      openTime: openTimeISO,
+      openPrice: parseFloat(openPriceStr),
+      closeTime: closeTimeISO,
       closePrice: getNum("closePrice"),
       stopLoss: getNum("stopLoss"),
       takeProfit: getNum("takeProfit"),

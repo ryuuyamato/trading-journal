@@ -139,7 +139,13 @@ export default async function TradesPage() {
 
                   {/* Aset */}
                   <td className="py-2 px-3">
-                    <PropertyPill marketType={trade.account.marketType} />
+                    <PropertyPill
+                      marketType={
+                        trade.account.marketType === "MULTI_ASSET" && trade.tradeMarketType
+                          ? trade.tradeMarketType
+                          : trade.account.marketType
+                      }
+                    />
                   </td>
 
                   {/* Mode */}
