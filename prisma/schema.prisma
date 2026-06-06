@@ -143,32 +143,14 @@ model TradeTag {
 
 // ─── Economic Calendar ───────────────────────────────────────────────────────
 
-model EconomicEvent {
-  id         String   @id @default(cuid())
-  externalId String   @unique
-  title      String
-  country    String
-  impact     Impact
-  eventTime  DateTime
-  actual     String?
-  forecast   String?
-  previous   String?
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
-
-  analysis EventAnalysis?
-}
-
 model EventAnalysis {
   id          String   @id @default(cuid())
-  eventId     String   @unique
+  externalId  String   @unique
   summary     String
   bias        String
   instruments String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
-  event EconomicEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
@@ -209,3 +191,4 @@ enum Impact {
   LOW
   HOLIDAY
 }
+

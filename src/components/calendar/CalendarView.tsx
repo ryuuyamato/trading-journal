@@ -11,6 +11,7 @@ interface Analysis {
 
 interface Event {
   id: string;
+  externalId: string;
   title: string;
   country: string;
   impact: string;

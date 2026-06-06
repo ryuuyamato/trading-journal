@@ -14,6 +14,7 @@ interface Analysis {
 
 interface Event {
   id: string;
+  externalId: string;
   title: string;
   country: string;
   impact: string;
@@ -100,7 +101,12 @@ export function EventRow({ event }: Props) {
           </div>
 
           <EventAnalysisPanel
-            eventId={event.id}
+            externalId={event.externalId}
+            title={event.title}
+            country={event.country}
+            forecast={event.forecast}
+            previous={event.previous}
+            actual={event.actual}
             existing={event.analysis}
             impact={event.impact}
           />

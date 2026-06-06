@@ -11,12 +11,26 @@ interface EventAnalysis {
 }
 
 interface Props {
-  eventId: string;
+  externalId: string;
+  title: string;
+  country: string;
+  forecast: string | null;
+  previous: string | null;
+  actual: string | null;
   existing?: EventAnalysis | null;
   impact: string;
 }
 
-export function EventAnalysisPanel({ eventId, existing, impact }: Props) {
+export function EventAnalysisPanel({
+  externalId,
+  title,
+  country,
+  forecast,
+  previous,
+  actual,
+  existing,
+  impact,
+}: Props) {
   const [analysis, setAnalysis] = useState<EventAnalysis | null>(existing ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,7 +42,7 @@ export function EventAnalysisPanel({ eventId, existing, impact }: Props) {
       const res = await fetch("/api/calendar", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ eventId }),
+        body: JSON.stringify({ externalId, title, country, forecast, previous, actual }),
       });
       if (!res.ok) {
         const data = await res.json();
@@ -46,33 +60,22 @@ export function EventAnalysisPanel({ eventId, existing, impact }: Props) {
   if (!analysis) {
     return (
       <div className="mt-3 pt-3 border-t border-border">
-        {impact === "HIGH" ? (
-          <button
-            onClick={requestAnalysis}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 text-[12px] rounded-md border border-border text-muted-foreground hover:text-foreground hover:border-foreground transition-colors disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="h-3.5 w-3.5" />
-            )}
-            {loading ? "Menganalisis..." : "Minta analisis AI"}
-          </button>
-        ) : (
-          <button
-            onClick={requestAnalysis}
-            disabled={loading}
-            className="flex items-center gap-2 px-3 py-1.5 text-[12px] rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            {loading ? (
-              <Loader2 className="h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Sparkles className="h-3.5 w-3.5 opacity-50" />
-            )}
-            {loading ? "Menganalisis..." : "Analisis AI"}
-          </button>
-        )}
+        <button
+          onClick={requestAnalysis}
+          disabled={loading}
+          className={`flex items-center gap-2 px-3 py-1.5 text-[12px] rounded-md border transition-colors disabled:opacity-50 ${
+            impact === "HIGH"
+              ? "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+              : "border-dashed border-border text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          {loading ? (
+            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+          ) : (
+            <Sparkles className={`h-3.5 w-3.5 ${impact !== "HIGH" ? "opacity-50" : ""}`} />
+          )}
+          {loading ? "Menganalisis..." : "Minta analisis AI"}
+        </button>
         {error && <p className="mt-2 text-[11px] text-red-500">{error}</p>}
       </div>
     );
@@ -87,9 +90,11 @@ export function EventAnalysisPanel({ eventId, existing, impact }: Props) {
         <Sparkles className="h-3.5 w-3.5 text-[#1D9E75] shrink-0" />
         <span className="text-[11px] font-medium text-[#1D9E75]">Analisis AI</span>
         {analysis.bias && (
-          <span className={`ml-auto flex items-center gap-1 text-[11px] font-medium ${
-            isBullish ? "text-green-600" : isBearish ? "text-red-500" : "text-muted-foreground"
-          }`}>
+          <span
+            className={`ml-auto flex items-center gap-1 text-[11px] font-medium ${
+              isBullish ? "text-green-600" : isBearish ? "text-red-500" : "text-muted-foreground"
+            }`}
+          >
             {isBullish ? (
               <TrendingUp className="h-3.5 w-3.5" />
             ) : isBearish ? (
@@ -101,9 +106,7 @@ export function EventAnalysisPanel({ eventId, existing, impact }: Props) {
           </span>
         )}
       </div>
-
       <p className="text-[12px] text-foreground leading-relaxed">{analysis.summary}</p>
-
       {analysis.instruments.length > 0 && (
         <div className="flex flex-wrap gap-1">
           {analysis.instruments.map((inst) => (

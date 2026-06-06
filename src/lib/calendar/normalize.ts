@@ -10,6 +10,7 @@ export interface NormalizedEvent {
   country: string;
   impact: Impact;
   eventTime: Date;
+  actual: string | null;
   forecast: string | null;
   previous: string | null;
 }
@@ -33,6 +34,7 @@ function normalizeEvent(e: FfEvent): NormalizedEvent | null {
     country: e.country,
     impact: mapImpact(e.impact),
     eventTime,
+    actual: e.actual || null,
     forecast: e.forecast || null,
     previous: e.previous || null,
   };
