@@ -39,7 +39,8 @@ export default async function AccountsPage() {
         </div>
       ) : (
         <div className="rounded-xl border border-border overflow-hidden">
-          <table className="w-full border-collapse">
+          <div className="overflow-x-auto">
+          <table className="w-full border-collapse min-w-120">
             <thead>
               <tr className="border-b border-border bg-secondary/50">
                 <th className="text-left py-2 px-4 text-[11px] text-muted-foreground font-medium">Nama</th>
@@ -77,6 +78,7 @@ export default async function AccountsPage() {
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </div>

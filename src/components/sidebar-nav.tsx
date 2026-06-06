@@ -14,6 +14,8 @@ import {
   ChevronDown,
   Search,
   ChevronRight,
+  Menu,
+  X,
 } from "lucide-react";
 
 const MARKET_DOT_COLORS: Record<string, string> = {
@@ -51,6 +53,7 @@ const BOTTOM_NAV = [
 export function SidebarNav({ userName, accounts }: SidebarNavProps) {
   const pathname = usePathname();
   const [accountsOpen, setAccountsOpen] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   function isActive(href: string) {
     if (href === "/dashboard") return pathname === "/dashboard";
@@ -60,8 +63,8 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
   const initial = (userName ?? "T").charAt(0).toUpperCase();
   const workspaceName = userName ? `${userName}'s Trading` : "Trading Journal";
 
-  return (
-    <aside className="flex flex-col h-full bg-sidebar border-r border-sidebar-border w-45.5 shrink-0 overflow-hidden">
+  const sidebarContent = (
+    <>
       {/* Workspace switcher */}
       <div className="flex items-center gap-2 px-3 py-3 cursor-pointer hover:bg-sidebar-accent rounded-md mx-1 mt-1 transition-colors">
         <div
@@ -94,6 +97,7 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
           <Link
             key={href}
             href={href}
+            onClick={() => setMobileOpen(false)}
             className={cn(
               "flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors",
               isActive(href)
@@ -133,6 +137,7 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
                 <Link
                   key={acc.id}
                   href="/accounts"
+                  onClick={() => setMobileOpen(false)}
                   className="flex items-center gap-2 px-2 py-1 rounded-md text-[12px] text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground transition-colors"
                 >
                   <span
@@ -148,6 +153,7 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
           {accountsOpen && accounts.length === 0 && (
             <Link
               href="/accounts"
+              onClick={() => setMobileOpen(false)}
               className="ml-5 flex items-center gap-2 px-2 py-1 text-[11px] text-muted-foreground hover:text-sidebar-foreground transition-colors"
             >
               + Tambah akun
@@ -161,6 +167,7 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
           <Link
             key={href}
             href={href}
+            onClick={() => setMobileOpen(false)}
             className={cn(
               "flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors",
               isActive(href)
@@ -173,6 +180,53 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
           </Link>
         ))}
       </nav>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* ── Mobile top bar ─────────────────────────────────────────────── */}
+      <header className="md:hidden fixed top-0 left-0 right-0 h-14 z-30 bg-sidebar border-b border-sidebar-border flex items-center px-4 gap-3">
+        <button
+          onClick={() => setMobileOpen(true)}
+          className="p-1.5 rounded-md hover:bg-sidebar-accent transition-colors"
+          aria-label="Buka menu"
+        >
+          <Menu className="h-5 w-5 text-foreground" />
+        </button>
+        <span className="text-[14px] font-medium truncate flex-1">{workspaceName}</span>
+      </header>
+
+      {/* ── Mobile backdrop ────────────────────────────────────────────── */}
+      {mobileOpen && (
+        <div
+          className="md:hidden fixed inset-0 bg-black/30 z-40"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* ── Sidebar ────────────────────────────────────────────────────── */}
+      <aside
+        className={cn(
+          "flex flex-col bg-sidebar border-r border-sidebar-border overflow-hidden",
+          // Mobile: fixed overlay, slide in/out
+          "fixed top-0 left-0 h-screen w-65 z-50 transition-transform duration-200 ease-in-out",
+          mobileOpen ? "translate-x-0" : "-translate-x-full",
+          // Desktop: static in flex layout
+          "md:relative md:translate-x-0 md:w-45.5 md:h-screen md:shrink-0"
+        )}
+      >
+        {/* Mobile close button */}
+        <button
+          className="md:hidden absolute top-3 right-3 p-1.5 rounded-md hover:bg-sidebar-accent transition-colors"
+          onClick={() => setMobileOpen(false)}
+          aria-label="Tutup menu"
+        >
+          <X className="h-4 w-4 text-muted-foreground" />
+        </button>
+
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

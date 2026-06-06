@@ -76,7 +76,7 @@ export default async function TradesPage() {
 
       {/* Table */}
       <div className="w-full overflow-x-auto">
-        <table className="w-full border-collapse">
+        <table className="w-full border-collapse min-w-160">
           <thead>
             <tr className="border-b border-border">
               <th className="text-left py-2 px-3 text-[11px] text-muted-foreground font-medium w-48">

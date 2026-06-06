@@ -184,7 +184,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
         <Plus className="h-4 w-4" />
         Trade Baru
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Catat Trade Baru</DialogTitle>
         </DialogHeader>
