@@ -167,11 +167,16 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
               <Label>Akun *</Label>
               <Select value={accountId} onValueChange={(v) => v && setAccountId(v)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Pilih akun" />
+                  <span className="flex flex-1 text-left text-sm">
+                    {selectedAccount
+                      ? `${selectedAccount.name} (${selectedAccount.currency})`
+                      : <span className="text-muted-foreground">Pilih akun</span>
+                    }
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id} label={`${a.name} (${a.currency})`}>
+                    <SelectItem key={a.id} value={a.id}>
                       {a.name} ({a.currency})
                     </SelectItem>
                   ))}
