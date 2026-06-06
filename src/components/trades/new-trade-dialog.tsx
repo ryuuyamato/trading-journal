@@ -171,7 +171,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 </SelectTrigger>
                 <SelectContent>
                   {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
+                    <SelectItem key={a.id} value={a.id} label={`${a.name} (${a.currency})`}>
                       {a.name} ({a.currency})
                     </SelectItem>
                   ))}
