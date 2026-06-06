@@ -18,27 +18,26 @@ export async function CalendarDataLoader({
 }) {
   const params = await searchParams;
 
-  // Fetch from ForexFactory — errors surface instead of silently returning []
-  let thisWeek: FfEvent[] = [];
-  let nextWeek: FfEvent[] = [];
-  let fetchError: string | null = null;
+  // Fetch each week independently — nextweek may 404 if FF hasn't published it yet
+  const [thisWeekResult, nextWeekResult] = await Promise.allSettled([
+    fetchFeed("thisweek"),
+    fetchFeed("nextweek"),
+  ]);
 
-  try {
-    [thisWeek, nextWeek] = await Promise.all([
-      fetchFeed("thisweek"),
-      fetchFeed("nextweek"),
-    ]);
-  } catch (err) {
-    fetchError = err instanceof Error ? err.message : String(err);
-  }
+  const thisWeek = thisWeekResult.status === "fulfilled" ? thisWeekResult.value : [];
+  const nextWeek = nextWeekResult.status === "fulfilled" ? nextWeekResult.value : [];
 
-  if (fetchError) {
+  // Only show error if thisweek also failed (nextweek 404 is normal)
+  if (thisWeekResult.status === "rejected" && thisWeek.length === 0) {
+    const msg = thisWeekResult.reason instanceof Error
+      ? thisWeekResult.reason.message
+      : String(thisWeekResult.reason);
     return (
       <div className="rounded-xl border border-border p-6 flex items-start gap-3">
         <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
         <div>
           <p className="text-[13px] font-medium">Gagal mengambil data ForexFactory</p>
-          <p className="text-[12px] text-muted-foreground mt-1 font-mono">{fetchError}</p>
+          <p className="text-[12px] text-muted-foreground mt-1 font-mono">{msg}</p>
           <p className="text-[11px] text-muted-foreground mt-2">
             Pastikan server dapat mengakses{" "}
             <span className="font-mono">nfs.faireconomy.media</span>, atau cek{" "}
