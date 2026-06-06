@@ -11,6 +11,7 @@ import {
   Library,
   BarChart2,
   ClipboardList,
+  Calendar,
   ChevronDown,
   Search,
   ChevronRight,
@@ -40,8 +41,9 @@ interface SidebarNavProps {
 }
 
 const TOP_NAV = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/trades",    label: "Jurnal",     icon: BookOpen },
+  { href: "/dashboard", label: "Dashboard",          icon: LayoutDashboard },
+  { href: "/trades",    label: "Jurnal",              icon: BookOpen },
+  { href: "/calendar",  label: "Kalender Ekonomi",    icon: Calendar },
 ];
 
 const BOTTOM_NAV = [
