@@ -1,22 +1,31 @@
 import { unstable_cache } from "next/cache";
 
-const FMP_BASE = "https://financialmodelingprep.com/api/v3";
+const TD_BASE = "https://api.twelvedata.com";
 
-export interface FmpEvent {
+export interface TdEvent {
+  id: string;
+  date: string;        // "YYYY-MM-DD"
+  time: string;        // "HH:MM:SS"
+  country: string;     // "United States", "Euro Zone", etc.
+  currency: string;    // "USD", "EUR", "GBP", etc.
+  importance: string;  // "high", "medium", "low"
   event: string;
-  date: string;          // "YYYY-MM-DD HH:MM:SS"
-  country: string;       // "US", "EU", "GB", "JP", etc.
   actual: string | null;
+  forecast: string | null;
   previous: string | null;
-  consensus: string | null; // = forecast
-  impact: string;        // "High", "Medium", "Low"
 }
 
-async function _fetchCalendar(from: string, to: string): Promise<FmpEvent[]> {
-  const apiKey = process.env.FMP_API_KEY;
-  if (!apiKey) throw new Error("FMP_API_KEY belum diset di environment variables");
+interface TdResponse {
+  result?: { list?: TdEvent[] };
+  status?: string;
+  message?: string;
+}
 
-  const url = `${FMP_BASE}/economic_calendar?from=${from}&to=${to}&apikey=${apiKey}`;
+async function _fetchCalendar(from: string, to: string): Promise<TdEvent[]> {
+  const apiKey = process.env.TWELVE_DATA_API_KEY;
+  if (!apiKey) throw new Error("TWELVE_DATA_API_KEY belum diset di environment variables");
+
+  const url = `${TD_BASE}/economic_calendar?start_date=${from}&end_date=${to}&apikey=${apiKey}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
   try {
@@ -25,19 +34,19 @@ async function _fetchCalendar(from: string, to: string): Promise<FmpEvent[]> {
       cache: "no-store",
     });
     clearTimeout(timeout);
-    if (!res.ok) throw new Error(`FMP API: HTTP ${res.status}`);
-    const data = await res.json();
-    if (!Array.isArray(data)) throw new Error("FMP API: response bukan array");
-    return data;
+    if (!res.ok) throw new Error(`Twelve Data: HTTP ${res.status}`);
+    const data: TdResponse = await res.json();
+    if (data.status === "error") throw new Error(`Twelve Data: ${data.message}`);
+    return data.result?.list ?? [];
   } catch (err) {
     clearTimeout(timeout);
     throw err;
   }
 }
 
-// Cache per date range — 1 hour. Errors are NOT cached so they retry next request.
+// Cache per date range — 1 hour. Errors NOT cached so they retry next request.
 export const fetchCalendar = unstable_cache(
   _fetchCalendar,
-  ["fmp-calendar"],
-  { revalidate: 3600, tags: ["fmp-calendar"] },
+  ["td-calendar"],
+  { revalidate: 3600, tags: ["td-calendar"] },
 );

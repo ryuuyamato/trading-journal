@@ -40,9 +40,9 @@ export async function CalendarDataLoader({
         <div>
           <p className="text-[13px] font-medium">Gagal mengambil data kalender</p>
           <p className="text-[12px] text-muted-foreground mt-1 font-mono">{fetchError}</p>
-          {fetchError.includes("FMP_API_KEY") && (
+          {fetchError.includes("TWELVE_DATA_API_KEY") && (
             <p className="text-[11px] text-muted-foreground mt-2">
-              Tambahkan <span className="font-mono">FMP_API_KEY</span> di Vercel → Environment Variables.
+              Tambahkan <span className="font-mono">TWELVE_DATA_API_KEY</span> di Vercel → Environment Variables.
             </p>
           )}
         </div>
