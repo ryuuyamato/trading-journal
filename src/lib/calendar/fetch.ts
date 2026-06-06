@@ -1,4 +1,4 @@
-const FF_BASE = process.env.FF_FEED_BASE ?? "https://nfs.faireconomy.media";
+const FF_BASE = (process.env.FF_FEED_BASE ?? "https://nfs.faireconomy.media").trim().replace(/\/$/, "");
 
 export type FeedWeek = "thisweek" | "nextweek";
 
