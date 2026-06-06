@@ -24,6 +24,7 @@ interface Event {
 
 interface Props {
   events: Event[];
+  rawCount?: number;
 }
 
 const DAY_NAMES = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -32,13 +33,22 @@ const MONTH_NAMES = [
   "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
 ];
 
-export function CalendarView({ events }: Props) {
+export function CalendarView({ events, rawCount }: Props) {
   if (events.length === 0) {
     return (
-      <div className="py-20 text-center text-[13px] text-muted-foreground border border-border rounded-xl">
-        Tidak ada event ekonomi dalam rentang ini.
-        <br />
-        <span className="text-[12px]">Coba sinkronkan data dengan klik tombol Sync.</span>
+      <div className="py-16 text-center text-[13px] text-muted-foreground border border-border rounded-xl space-y-1">
+        <p>Tidak ada event ekonomi dalam rentang ini.</p>
+        {rawCount !== undefined && rawCount === 0 && (
+          <p className="text-[12px]">
+            Feed ForexFactory juga kosong — cek{" "}
+            <span className="font-mono">/api/calendar/test</span> untuk diagnosis.
+          </p>
+        )}
+        {rawCount !== undefined && rawCount > 0 && (
+          <p className="text-[12px]">
+            {rawCount} event ditemukan dari FF, tapi semuanya terfilter. Coba reset filter.
+          </p>
+        )}
       </div>
     );
   }

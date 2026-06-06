@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
-import { fetchFeed } from "@/lib/calendar/fetch";
+import { fetchFeed, type FfEvent } from "@/lib/calendar/fetch";
 import { normalizeEvents } from "@/lib/calendar/normalize";
 import { CalendarView } from "./CalendarView";
+import { AlertCircle } from "lucide-react";
 
 interface SearchParams {
   from?: string;
@@ -17,11 +18,36 @@ export async function CalendarDataLoader({
 }) {
   const params = await searchParams;
 
-  // Fetch from ForexFactory (cached 1h via unstable_cache)
-  const [thisWeek, nextWeek] = await Promise.all([
-    fetchFeed("thisweek").catch(() => [] as Awaited<ReturnType<typeof fetchFeed>>),
-    fetchFeed("nextweek").catch(() => [] as Awaited<ReturnType<typeof fetchFeed>>),
-  ]);
+  // Fetch from ForexFactory — errors surface instead of silently returning []
+  let thisWeek: FfEvent[] = [];
+  let nextWeek: FfEvent[] = [];
+  let fetchError: string | null = null;
+
+  try {
+    [thisWeek, nextWeek] = await Promise.all([
+      fetchFeed("thisweek"),
+      fetchFeed("nextweek"),
+    ]);
+  } catch (err) {
+    fetchError = err instanceof Error ? err.message : String(err);
+  }
+
+  if (fetchError) {
+    return (
+      <div className="rounded-xl border border-border p-6 flex items-start gap-3">
+        <AlertCircle className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+        <div>
+          <p className="text-[13px] font-medium">Gagal mengambil data ForexFactory</p>
+          <p className="text-[12px] text-muted-foreground mt-1 font-mono">{fetchError}</p>
+          <p className="text-[11px] text-muted-foreground mt-2">
+            Pastikan server dapat mengakses{" "}
+            <span className="font-mono">nfs.faireconomy.media</span>, atau cek{" "}
+            <span className="font-mono">/api/calendar/test</span> untuk diagnosis.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   const allEvents = normalizeEvents([...thisWeek, ...nextWeek]);
 
@@ -58,9 +84,11 @@ export async function CalendarDataLoader({
       actual: e.actual,
       forecast: e.forecast,
       previous: e.previous,
-      analysis: a ? { id: a.id, summary: a.summary, bias: a.bias, instruments: a.instruments } : null,
+      analysis: a
+        ? { id: a.id, summary: a.summary, bias: a.bias, instruments: a.instruments }
+        : null,
     };
   });
 
-  return <CalendarView events={events} />;
+  return <CalendarView events={events} rawCount={allEvents.length} />;
 }

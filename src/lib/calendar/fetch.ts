@@ -1,5 +1,3 @@
-import { unstable_cache } from "next/cache";
-
 const FF_BASE = process.env.FF_FEED_BASE ?? "https://nfs.faireconomy.media";
 
 export type FeedWeek = "thisweek" | "nextweek";
@@ -15,25 +13,24 @@ export interface FfEvent {
   actual?: string;
 }
 
-async function _fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
+export async function fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
   const url = `${FF_BASE}/ff_calendar_${week}.json`;
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 8000);
+  const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "TradingJournal/1.0" },
+      // User-Agent yang lebih umum agar tidak diblokir
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; TradingJournal/1.0)" },
+      cache: "no-store",
     });
-    if (!res.ok) return [];
-    return res.json();
-  } finally {
     clearTimeout(timeout);
+    if (!res.ok) throw new Error(`ForexFactory ${week}: HTTP ${res.status}`);
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error(`ForexFactory ${week}: bukan array`);
+    return data;
+  } catch (err) {
+    clearTimeout(timeout);
+    throw err; // Biarkan error naik ke atas, jangan sembunyikan
   }
 }
-
-// Cached with unstable_cache — revalidates every hour (Next.js 16 previous model)
-export const fetchFeed = unstable_cache(
-  _fetchFeed,
-  ["ff-calendar"],
-  { revalidate: 3600, tags: ["ff-calendar"] },
-);
