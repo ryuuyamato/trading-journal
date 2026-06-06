@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { Direction, EntryMode, MarginMode, TradeStatus } from "@/generated/prisma/enums";
+import { Direction, EntryMode, MarginMode, MarketType, TradeStatus } from "@/generated/prisma/enums";
 
 const createSchema = z.object({
   accountId: z.string().min(1),
@@ -47,6 +47,9 @@ const createSchema = z.object({
   stopLoss: z.number().optional().nullable(),
   takeProfit: z.number().optional().nullable(),
   riskPercent: z.number().optional().nullable(),
+
+  // Multi-asset: which specific asset type this trade is
+  tradeMarketType: z.nativeEnum(MarketType).optional().nullable(),
 
   // Analysis
   setup: z.string().optional().nullable(),

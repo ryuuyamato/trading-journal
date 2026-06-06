@@ -10,6 +10,7 @@ const MARKET_DOT_COLORS: Record<string, string> = {
   STOCK_US: "#085041",
   CRYPTO_SPOT: "#7F77DD",
   CRYPTO_FUTURES: "#7F77DD",
+  MULTI_ASSET: "#C47B2B",
 };
 
 export default async function AccountsPage() {

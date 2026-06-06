@@ -6,6 +6,7 @@ type PillVariant =
   | "stock"
   | "stock_us"
   | "crypto"
+  | "multi_asset"
   | "mode"
   | "profit"
   | "loss"
@@ -17,6 +18,7 @@ const PILL_STYLES: Record<PillVariant, { bg: string; text: string }> = {
   crypto:    { bg: "#EEEDFE", text: "#3C3489" },
   stock:     { bg: "#E1F5EE", text: "#085041" },
   stock_us:  { bg: "#E1F5EE", text: "#085041" },
+  multi_asset: { bg: "#FEF3E2", text: "#7C4A00" },
   mode:      { bg: "#F1EFE8", text: "#444441" },
   profit:    { bg: "#E1F5EE", text: "#0F6E56" },
   loss:      { bg: "#FCEBEB", text: "#A32D2D" },
@@ -30,6 +32,7 @@ const MARKET_TO_VARIANT: Record<string, PillVariant> = {
   STOCK_US: "stock_us",
   CRYPTO_SPOT: "crypto",
   CRYPTO_FUTURES: "crypto",
+  MULTI_ASSET: "multi_asset",
 };
 
 const MARKET_LABELS: Record<string, string> = {
@@ -39,6 +42,7 @@ const MARKET_LABELS: Record<string, string> = {
   STOCK_US: "Saham US",
   CRYPTO_SPOT: "Crypto",
   CRYPTO_FUTURES: "Crypto Fut",
+  MULTI_ASSET: "Multi Asset",
 };
 
 interface PropertyPillProps {

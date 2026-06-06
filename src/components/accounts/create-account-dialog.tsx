@@ -30,6 +30,7 @@ const MARKET_TYPES = [
   { value: "STOCK_US", label: "Saham US" },
   { value: "CRYPTO_SPOT", label: "Crypto Spot" },
   { value: "CRYPTO_FUTURES", label: "Crypto Futures" },
+  { value: "MULTI_ASSET", label: "Multi Asset (IB / Universal)" },
 ];
 
 const CURRENCIES = ["USD", "IDR", "EUR", "USDT"];
@@ -97,7 +98,12 @@ export function CreateAccountDialog() {
             <Label>Tipe Market *</Label>
             <Select value={marketType} onValueChange={(v) => v && setMarketType(v)}>
               <SelectTrigger>
-                <SelectValue placeholder="Pilih tipe market" />
+                <span className="flex flex-1 text-left text-sm">
+                  {marketType
+                    ? MARKET_TYPES.find((m) => m.value === marketType)?.label
+                    : <span className="text-muted-foreground">Pilih tipe market</span>
+                  }
+                </span>
               </SelectTrigger>
               <SelectContent>
                 {MARKET_TYPES.map((m) => (
@@ -118,7 +124,7 @@ export function CreateAccountDialog() {
               <Label>Mata Uang</Label>
               <Select value={currency} onValueChange={(v) => v && setCurrency(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <span className="flex flex-1 text-left text-sm">{currency}</span>
                 </SelectTrigger>
                 <SelectContent>
                   {CURRENCIES.map((c) => (

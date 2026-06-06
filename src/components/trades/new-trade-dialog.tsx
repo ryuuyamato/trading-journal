@@ -18,7 +18,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus } from "lucide-react";
@@ -39,10 +38,19 @@ const FOREX_SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD
 const COMMODITY_SYMBOLS = ["XAUUSD", "XAGUSD", "USOIL", "UKOIL"];
 const CRYPTO_SYMBOLS = ["BTCUSDT", "ETHUSDT", "BNBUSDT", "SOLUSDT", "XRPUSDT"];
 
-function getSymbolSuggestions(marketType: string) {
-  if (marketType === "FOREX") return FOREX_SYMBOLS;
-  if (marketType === "COMMODITY") return COMMODITY_SYMBOLS;
-  if (marketType === "CRYPTO_SPOT" || marketType === "CRYPTO_FUTURES") return CRYPTO_SYMBOLS;
+const TRADE_ASSET_TYPES = [
+  { value: "FOREX",          label: "Forex" },
+  { value: "COMMODITY",      label: "Komoditas (XAU/XAG)" },
+  { value: "STOCK_IDX",      label: "Saham IDX" },
+  { value: "STOCK_US",       label: "Saham US" },
+  { value: "CRYPTO_SPOT",    label: "Crypto Spot" },
+  { value: "CRYPTO_FUTURES", label: "Crypto Futures" },
+];
+
+function getSymbolSuggestions(mt: string) {
+  if (mt === "FOREX") return FOREX_SYMBOLS;
+  if (mt === "COMMODITY") return COMMODITY_SYMBOLS;
+  if (mt === "CRYPTO_SPOT" || mt === "CRYPTO_FUTURES") return CRYPTO_SYMBOLS;
   return [];
 }
 
@@ -69,11 +77,14 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
   const [status, setStatus] = useState("CLOSED");
   const [entryMode, setEntryMode] = useState("SINGLE");
   const [marginMode, setMarginMode] = useState("ISOLATED");
+  const [tradeAssetType, setTradeAssetType] = useState("");
 
   const selectedAccount = accounts.find((a) => a.id === accountId);
-  const marketType = selectedAccount?.marketType ?? "";
+  const accountMarketType = selectedAccount?.marketType ?? "";
+  const isMultiAsset = accountMarketType === "MULTI_ASSET";
+  const effectiveMarketType = isMultiAsset ? tradeAssetType : accountMarketType;
 
-  const suggestions = getSymbolSuggestions(marketType);
+  const suggestions = getSymbolSuggestions(effectiveMarketType);
 
   function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -100,10 +111,11 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
       commission: parseFloat(get("commission")) || 0,
       setup: get("setup") || null,
       notes: get("notes") || null,
+      tradeMarketType: isMultiAsset ? (tradeAssetType || null) : null,
     };
 
     // Market-specific fields
-    if (isForexOrCommodity(marketType)) {
+    if (isForexOrCommodity(effectiveMarketType)) {
       data.lotSize = getNum("lotSize");
       data.swap = parseFloat(get("swap")) || 0;
       if (entryMode === "MULTI_LAYER") {
@@ -112,20 +124,19 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
         data.layerCount = parseInt(get("layerCount")) || null;
       }
     }
-    if (isStock(marketType)) {
+    if (isStock(effectiveMarketType)) {
       data.quantity = getNum("quantity");
       data.buyFee = parseFloat(get("buyFee")) || 0;
       data.sellFee = parseFloat(get("sellFee")) || 0;
       data.taxAmount = parseFloat(get("taxAmount")) || 0;
       data.dividend = parseFloat(get("dividend")) || 0;
     }
-    if (isCryptoFutures(marketType)) {
+    if (isCryptoFutures(effectiveMarketType)) {
       data.leverage = getNum("leverage");
       data.marginMode = marginMode;
       data.fundingRate = getNum("fundingRate");
     }
 
-    // P&L — for multi-layer forex/commodity, entered manually from broker
     data.grossProfit = getNum("grossProfit");
     data.netProfit = getNum("netProfit");
     data.pips = getNum("pips");
@@ -161,29 +172,54 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
           <DialogTitle>Catat Trade Baru</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
-          {/* Account + Symbol + Direction */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2 col-span-2">
-              <Label>Akun *</Label>
-              <Select value={accountId} onValueChange={(v) => v && setAccountId(v)}>
+          {/* Account */}
+          <div className="space-y-2">
+            <Label>Akun *</Label>
+            <Select value={accountId} onValueChange={(v) => { if (v) { setAccountId(v); setTradeAssetType(""); } }}>
+              <SelectTrigger>
+                <span className="flex flex-1 text-left text-sm">
+                  {selectedAccount
+                    ? `${selectedAccount.name} (${selectedAccount.currency})`
+                    : <span className="text-muted-foreground">Pilih akun</span>
+                  }
+                </span>
+              </SelectTrigger>
+              <SelectContent>
+                {accounts.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name} ({a.currency})
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Tipe Aset — hanya untuk akun Multi Asset */}
+          {isMultiAsset && (
+            <div className="space-y-2">
+              <Label>Tipe Aset *</Label>
+              <Select value={tradeAssetType} onValueChange={(v) => v && setTradeAssetType(v)}>
                 <SelectTrigger>
                   <span className="flex flex-1 text-left text-sm">
-                    {selectedAccount
-                      ? `${selectedAccount.name} (${selectedAccount.currency})`
-                      : <span className="text-muted-foreground">Pilih akun</span>
+                    {tradeAssetType
+                      ? TRADE_ASSET_TYPES.find((t) => t.value === tradeAssetType)?.label
+                      : <span className="text-muted-foreground">Pilih tipe aset untuk trade ini</span>
                     }
                   </span>
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name} ({a.currency})
+                  {TRADE_ASSET_TYPES.map((t) => (
+                    <SelectItem key={t.value} value={t.value}>
+                      {t.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
+          )}
 
+          {/* Symbol + Direction */}
+          <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="symbol">Symbol *</Label>
               <Input
@@ -202,7 +238,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
               <Label>Arah *</Label>
               <Select value={direction} onValueChange={(v) => v && setDirection(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <span className="flex flex-1 text-left text-sm">{direction === "LONG" ? "Long / Buy" : "Short / Sell"}</span>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="LONG">Long / Buy</SelectItem>
@@ -213,12 +249,14 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
           </div>
 
           {/* Entry mode (forex/commodity only) */}
-          {isMultiLayerSupported(marketType) && (
+          {isMultiLayerSupported(effectiveMarketType) && (
             <div className="space-y-2">
               <Label>Mode Entry</Label>
               <Select value={entryMode} onValueChange={(v) => v && setEntryMode(v)}>
                 <SelectTrigger>
-                  <SelectValue />
+                  <span className="flex flex-1 text-left text-sm">
+                    {entryMode === "SINGLE" ? "Single Entry" : "Multi-Layer (Grid/Averaging)"}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="SINGLE">Single Entry</SelectItem>
@@ -232,7 +270,9 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
           <div className="space-y-2">
             <Label>Status</Label>
             <Select value={status} onValueChange={(v) => v && setStatus(v)}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectTrigger>
+                <span className="flex flex-1 text-left text-sm">{status === "OPEN" ? "Open" : "Closed"}</span>
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="OPEN">Open</SelectItem>
                 <SelectItem value="CLOSED">Closed</SelectItem>
@@ -274,7 +314,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
 
             {/* Market-specific tab */}
             <TabsContent value="market" className="space-y-3 mt-3">
-              {isForexOrCommodity(marketType) && (
+              {isForexOrCommodity(effectiveMarketType) && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
@@ -305,7 +345,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 </>
               )}
 
-              {isStock(marketType) && (
+              {isStock(effectiveMarketType) && (
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="quantity">Jumlah Saham/Lot</Label>
@@ -332,7 +372,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 </>
               )}
 
-              {isCryptoFutures(marketType) && (
+              {isCryptoFutures(effectiveMarketType) && (
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="leverage">Leverage</Label>
@@ -341,7 +381,9 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                   <div className="space-y-2">
                     <Label>Margin Mode</Label>
                     <Select value={marginMode} onValueChange={(v) => v && setMarginMode(v)}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <span className="flex flex-1 text-left text-sm">{marginMode}</span>
+                      </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="ISOLATED">Isolated</SelectItem>
                         <SelectItem value="CROSS">Cross</SelectItem>
@@ -355,9 +397,12 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 </div>
               )}
 
-              {!isForexOrCommodity(marketType) && !isStock(marketType) && !isCryptoFutures(marketType) && (
+              {!isForexOrCommodity(effectiveMarketType) && !isStock(effectiveMarketType) && !isCryptoFutures(effectiveMarketType) && (
                 <p className="text-sm text-muted-foreground py-4 text-center">
-                  Pilih akun terlebih dahulu untuk melihat field spesifik market
+                  {isMultiAsset
+                    ? "Pilih tipe aset di atas untuk melihat field spesifik"
+                    : "Pilih akun terlebih dahulu untuk melihat field spesifik market"
+                  }
                 </p>
               )}
 
@@ -383,7 +428,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                   <Label htmlFor="netProfit">Net Profit</Label>
                   <Input id="netProfit" name="netProfit" type="number" step="0.01" />
                 </div>
-                {isForexOrCommodity(marketType) && (
+                {isForexOrCommodity(effectiveMarketType) && (
                   <div className="space-y-2">
                     <Label htmlFor="pips">Pips</Label>
                     <Input id="pips" name="pips" type="number" step="0.1" />

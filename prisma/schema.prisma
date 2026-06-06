@@ -88,6 +88,9 @@ model Trade {
   takeProfit  Float?
   riskPercent Float?
 
+  // For MULTI_ASSET accounts — which asset type this specific trade is
+  tradeMarketType MarketType?
+
   // Analysis
   setup String?
   notes String?
@@ -147,6 +150,7 @@ enum MarketType {
   STOCK_US
   CRYPTO_SPOT
   CRYPTO_FUTURES
+  MULTI_ASSET
 }
 
 enum Direction {
