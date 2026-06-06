@@ -42,11 +42,10 @@ export function CalendarView({ events }: Props) {
     );
   }
 
-  // Group events by date (UTC date)
+  // Group events by date in WIB (Asia/Jakarta = UTC+7)
   const grouped = new Map<string, Event[]>();
   for (const event of events) {
-    const d = new Date(event.eventTime);
-    const key = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+    const key = toJakartaDateKey(event.eventTime);
     if (!grouped.has(key)) grouped.set(key, []);
     grouped.get(key)!.push(event);
   }
@@ -57,11 +56,12 @@ export function CalendarView({ events }: Props) {
     <div className="space-y-4">
       {sortedDates.map((dateKey) => {
         const dayEvents = grouped.get(dateKey)!;
-        const date = new Date(`${dateKey}T00:00:00Z`);
-        const dayName = DAY_NAMES[date.getUTCDay()];
-        const monthName = MONTH_NAMES[date.getUTCMonth()];
-        const dayNum = date.getUTCDate();
-        const year = date.getUTCFullYear();
+        // Parse date parts from YYYY-MM-DD key
+        const [year, month, day] = dateKey.split("-").map(Number);
+        const date = new Date(year, month - 1, day);
+        const dayName = DAY_NAMES[date.getDay()];
+        const monthName = MONTH_NAMES[date.getMonth()];
+        const dayNum = day;
         const isToday = dateKey === todayKey();
         const highCount = dayEvents.filter((e) => e.impact === "HIGH").length;
 
@@ -103,7 +103,11 @@ export function CalendarView({ events }: Props) {
   );
 }
 
+function toJakartaDateKey(isoString: string): string {
+  // Returns YYYY-MM-DD in Asia/Jakarta (WIB = UTC+7)
+  return new Date(isoString).toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+}
+
 function todayKey(): string {
-  const d = new Date();
-  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
+  return new Date().toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
 }

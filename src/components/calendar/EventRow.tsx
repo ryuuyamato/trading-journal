@@ -62,7 +62,9 @@ export function EventRow({ event }: Props) {
         <span className={cn("w-2 h-2 rounded-full shrink-0", IMPACT_DOT[event.impact] ?? "bg-border")} />
 
         {/* Time */}
-        <span className="text-[12px] text-muted-foreground w-14 shrink-0 font-mono">{timeStr}</span>
+        <span className="text-[12px] text-muted-foreground w-20 shrink-0 font-mono">
+          {timeStr} <span className="text-[10px] opacity-60">WIB</span>
+        </span>
 
         {/* Currency */}
         <span className="text-[11px] font-medium px-1.5 py-0.5 rounded bg-secondary border border-border text-foreground w-12 text-center shrink-0">
