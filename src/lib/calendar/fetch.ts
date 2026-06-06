@@ -1,34 +1,33 @@
 import { unstable_cache } from "next/cache";
 
-const FF_BASE = (process.env.FF_FEED_BASE ?? "https://nfs.faireconomy.media").trim().replace(/\/$/, "");
+const FMP_BASE = "https://financialmodelingprep.com/api/v3";
 
-export type FeedWeek = "thisweek" | "nextweek";
-
-export interface FfEvent {
-  title: string;
-  country: string;
-  date: string;
-  time: string;
-  impact: string;
-  forecast: string;
-  previous: string;
-  actual?: string;
+export interface FmpEvent {
+  event: string;
+  date: string;          // "YYYY-MM-DD HH:MM:SS"
+  country: string;       // "US", "EU", "GB", "JP", etc.
+  actual: string | null;
+  previous: string | null;
+  consensus: string | null; // = forecast
+  impact: string;        // "High", "Medium", "Low"
 }
 
-async function _fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
-  const url = `${FF_BASE}/ff_calendar_${week}.json`;
+async function _fetchCalendar(from: string, to: string): Promise<FmpEvent[]> {
+  const apiKey = process.env.FMP_API_KEY;
+  if (!apiKey) throw new Error("FMP_API_KEY belum diset di environment variables");
+
+  const url = `${FMP_BASE}/economic_calendar?from=${from}&to=${to}&apikey=${apiKey}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const res = await fetch(url, {
       signal: controller.signal,
-      headers: { "User-Agent": "Mozilla/5.0 (compatible; TradingJournal/1.0)" },
       cache: "no-store",
     });
     clearTimeout(timeout);
-    if (!res.ok) throw new Error(`ForexFactory ${week}: HTTP ${res.status}`);
+    if (!res.ok) throw new Error(`FMP API: HTTP ${res.status}`);
     const data = await res.json();
-    if (!Array.isArray(data)) throw new Error(`ForexFactory ${week}: bukan array`);
+    if (!Array.isArray(data)) throw new Error("FMP API: response bukan array");
     return data;
   } catch (err) {
     clearTimeout(timeout);
@@ -36,10 +35,9 @@ async function _fetchFeed(week: FeedWeek): Promise<FfEvent[]> {
   }
 }
 
-// Cache successful responses for 1 hour.
-// unstable_cache does NOT cache thrown errors, so 429/404 will be retried next request.
-export const fetchFeed = unstable_cache(
-  _fetchFeed,
-  ["ff-calendar"],
-  { revalidate: 3600, tags: ["ff-calendar"] },
+// Cache per date range — 1 hour. Errors are NOT cached so they retry next request.
+export const fetchCalendar = unstable_cache(
+  _fetchCalendar,
+  ["fmp-calendar"],
+  { revalidate: 3600, tags: ["fmp-calendar"] },
 );
