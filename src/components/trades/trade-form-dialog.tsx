@@ -30,8 +30,52 @@ interface Account {
   currency: string;
 }
 
-interface NewTradeDialogProps {
+export interface TradeFormValues {
+  id: string;
+  accountId: string;
+  symbol: string;
+  direction: string;
+  status: string;
+  entryMode: string;
+  openTime: string; // ISO
+  closeTime: string | null; // ISO
+  openPrice: number;
+  closePrice: number | null;
+  lotSize: number | null;
+  swap: number;
+  priceRangeHigh: number | null;
+  priceRangeLow: number | null;
+  layerCount: number | null;
+  quantity: number | null;
+  buyFee: number;
+  sellFee: number;
+  taxAmount: number;
+  dividend: number;
+  leverage: number | null;
+  marginMode: string | null;
+  fundingRate: number | null;
+  grossProfit: number | null;
+  commission: number;
+  netProfit: number | null;
+  rMultiple: number | null;
+  pips: number | null;
+  stopLoss: number | null;
+  takeProfit: number | null;
+  riskPercent: number | null;
+  tradeMarketType: string | null;
+  setup: string | null;
+  notes: string | null;
+  tagIds: string[];
+}
+
+interface TradeFormDialogProps {
   accounts: Account[];
+  mode: "create" | "edit";
+  trade?: TradeFormValues;
+  // Edit mode is always controlled externally (e.g. opened from a row action menu) —
+  // no built-in trigger is rendered, the parent owns `open`/`onOpenChange`.
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 const FOREX_SYMBOLS = ["EURUSD", "GBPUSD", "USDJPY", "USDCHF", "AUDUSD", "USDCAD", "NZDUSD"];
@@ -67,17 +111,32 @@ function isMultiLayerSupported(mt: string) {
   return mt === "FOREX" || mt === "COMMODITY";
 }
 
-export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
+// Converts an ISO datetime string to the "YYYY-MM-DDTHH:mm" shape <input type="datetime-local"> expects, in local time.
+function toDatetimeLocal(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function numStr(v: number | null | undefined): string {
+  return v === null || v === undefined ? "" : String(v);
+}
+
+export function TradeFormDialog({ accounts, mode, trade, open: openProp, onOpenChange }: TradeFormDialogProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = openProp ?? internalOpen;
+  const setOpen = onOpenChange ?? setInternalOpen;
   const [isPending, startTransition] = useTransition();
 
-  const [accountId, setAccountId] = useState(accounts[0]?.id ?? "");
-  const [direction, setDirection] = useState("LONG");
-  const [status, setStatus] = useState("CLOSED");
-  const [entryMode, setEntryMode] = useState("SINGLE");
-  const [marginMode, setMarginMode] = useState("ISOLATED");
-  const [tradeAssetType, setTradeAssetType] = useState("");
+  const [accountId, setAccountId] = useState(trade?.accountId ?? accounts[0]?.id ?? "");
+  const [direction, setDirection] = useState(trade?.direction ?? "LONG");
+  const [status, setStatus] = useState(trade?.status ?? "CLOSED");
+  const [entryMode, setEntryMode] = useState(trade?.entryMode ?? "SINGLE");
+  const [marginMode, setMarginMode] = useState(trade?.marginMode ?? "ISOLATED");
+  const [tradeAssetType, setTradeAssetType] = useState(trade?.tradeMarketType ?? "");
 
   const selectedAccount = accounts.find((a) => a.id === accountId);
   const accountMarketType = selectedAccount?.marketType ?? "";
@@ -129,6 +188,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
       setup: get("setup") || null,
       notes: get("notes") || null,
       tradeMarketType: isMultiAsset ? (tradeAssetType || null) : null,
+      tagIds: trade?.tagIds ?? [],
     };
 
     // Market-specific fields
@@ -159,9 +219,12 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
     data.pips = getNum("pips");
     data.rMultiple = getNum("rMultiple");
 
+    const url = mode === "edit" ? `/api/trades/${trade!.id}` : "/api/trades";
+    const method = mode === "edit" ? "PATCH" : "POST";
+
     startTransition(async () => {
-      const res = await fetch("/api/trades", {
-        method: "POST",
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
@@ -172,7 +235,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
         return;
       }
 
-      toast.success("Trade berhasil disimpan");
+      toast.success(mode === "edit" ? "Trade berhasil diperbarui" : "Trade berhasil disimpan");
       setOpen(false);
       router.refresh();
     });
@@ -180,19 +243,21 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button size="sm" className="gap-2" />}>
-        <Plus className="h-4 w-4" />
-        Trade Baru
-      </DialogTrigger>
+      {mode === "create" && openProp === undefined && (
+        <DialogTrigger render={<Button size="sm" className="gap-2" />}>
+          <Plus className="h-4 w-4" />
+          Trade Baru
+        </DialogTrigger>
+      )}
       <DialogContent className="w-full sm:max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Catat Trade Baru</DialogTitle>
+          <DialogTitle>{mode === "edit" ? "Edit Trade" : "Catat Trade Baru"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5 mt-2">
           {/* Account */}
           <div className="space-y-2">
             <Label>Akun *</Label>
-            <Select value={accountId} onValueChange={(v) => { if (v) { setAccountId(v); setTradeAssetType(""); } }}>
+            <Select value={accountId} onValueChange={(v) => { if (v) { setAccountId(v); if (mode === "create") setTradeAssetType(""); } }}>
               <SelectTrigger>
                 <span className="flex flex-1 text-left text-sm">
                   {selectedAccount
@@ -244,6 +309,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 name="symbol"
                 placeholder={suggestions[0] ?? "Mis: EURUSD"}
                 list="symbol-suggestions"
+                defaultValue={trade?.symbol ?? ""}
                 required
               />
               <datalist id="symbol-suggestions">
@@ -301,11 +367,11 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="openTime">Waktu Buka *</Label>
-              <Input id="openTime" name="openTime" type="datetime-local" required />
+              <Input id="openTime" name="openTime" type="datetime-local" defaultValue={toDatetimeLocal(trade?.openTime)} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="closeTime">Waktu Tutup</Label>
-              <Input id="closeTime" name="closeTime" type="datetime-local" />
+              <Input id="closeTime" name="closeTime" type="datetime-local" defaultValue={toDatetimeLocal(trade?.closeTime)} />
             </div>
           </div>
 
@@ -313,11 +379,11 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="openPrice">Harga Buka *</Label>
-              <Input id="openPrice" name="openPrice" type="number" step="any" required />
+              <Input id="openPrice" name="openPrice" type="number" step="any" defaultValue={numStr(trade?.openPrice)} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="closePrice">Harga Tutup</Label>
-              <Input id="closePrice" name="closePrice" type="number" step="any" />
+              <Input id="closePrice" name="closePrice" type="number" step="any" defaultValue={numStr(trade?.closePrice)} />
             </div>
           </div>
 
@@ -336,26 +402,26 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="lotSize">Lot Size</Label>
-                      <Input id="lotSize" name="lotSize" type="number" step="0.01" placeholder="0.01" />
+                      <Input id="lotSize" name="lotSize" type="number" step="0.01" placeholder="0.01" defaultValue={numStr(trade?.lotSize)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="swap">Swap</Label>
-                      <Input id="swap" name="swap" type="number" step="0.01" placeholder="0" />
+                      <Input id="swap" name="swap" type="number" step="0.01" placeholder="0" defaultValue={numStr(trade?.swap)} />
                     </div>
                   </div>
                   {entryMode === "MULTI_LAYER" && (
                     <div className="grid grid-cols-3 gap-3">
                       <div className="space-y-2">
                         <Label htmlFor="priceRangeHigh">Harga Tertinggi</Label>
-                        <Input id="priceRangeHigh" name="priceRangeHigh" type="number" step="any" />
+                        <Input id="priceRangeHigh" name="priceRangeHigh" type="number" step="any" defaultValue={numStr(trade?.priceRangeHigh)} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="priceRangeLow">Harga Terendah</Label>
-                        <Input id="priceRangeLow" name="priceRangeLow" type="number" step="any" />
+                        <Input id="priceRangeLow" name="priceRangeLow" type="number" step="any" defaultValue={numStr(trade?.priceRangeLow)} />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="layerCount">Jumlah Layer</Label>
-                        <Input id="layerCount" name="layerCount" type="number" min="1" />
+                        <Input id="layerCount" name="layerCount" type="number" min="1" defaultValue={numStr(trade?.layerCount)} />
                       </div>
                     </div>
                   )}
@@ -366,24 +432,24 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 <>
                   <div className="space-y-2">
                     <Label htmlFor="quantity">Jumlah Saham/Lot</Label>
-                    <Input id="quantity" name="quantity" type="number" step="1" />
+                    <Input id="quantity" name="quantity" type="number" step="1" defaultValue={numStr(trade?.quantity)} />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="buyFee">Biaya Beli</Label>
-                      <Input id="buyFee" name="buyFee" type="number" step="0.01" placeholder="0" />
+                      <Input id="buyFee" name="buyFee" type="number" step="0.01" placeholder="0" defaultValue={numStr(trade?.buyFee)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="sellFee">Biaya Jual</Label>
-                      <Input id="sellFee" name="sellFee" type="number" step="0.01" placeholder="0" />
+                      <Input id="sellFee" name="sellFee" type="number" step="0.01" placeholder="0" defaultValue={numStr(trade?.sellFee)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="taxAmount">Pajak</Label>
-                      <Input id="taxAmount" name="taxAmount" type="number" step="0.01" placeholder="0" />
+                      <Input id="taxAmount" name="taxAmount" type="number" step="0.01" placeholder="0" defaultValue={numStr(trade?.taxAmount)} />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="dividend">Dividen</Label>
-                      <Input id="dividend" name="dividend" type="number" step="0.01" placeholder="0" />
+                      <Input id="dividend" name="dividend" type="number" step="0.01" placeholder="0" defaultValue={numStr(trade?.dividend)} />
                     </div>
                   </div>
                 </>
@@ -393,7 +459,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="leverage">Leverage</Label>
-                    <Input id="leverage" name="leverage" type="number" step="1" placeholder="10" />
+                    <Input id="leverage" name="leverage" type="number" step="1" placeholder="10" defaultValue={numStr(trade?.leverage)} />
                   </div>
                   <div className="space-y-2">
                     <Label>Margin Mode</Label>
@@ -409,7 +475,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
                   </div>
                   <div className="space-y-2 col-span-2">
                     <Label htmlFor="fundingRate">Funding Rate</Label>
-                    <Input id="fundingRate" name="fundingRate" type="number" step="0.0001" />
+                    <Input id="fundingRate" name="fundingRate" type="number" step="0.0001" defaultValue={numStr(trade?.fundingRate)} />
                   </div>
                 </div>
               )}
@@ -425,7 +491,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
 
               <div className="space-y-2">
                 <Label htmlFor="commission">Komisi</Label>
-                <Input id="commission" name="commission" type="number" step="0.01" placeholder="0" />
+                <Input id="commission" name="commission" type="number" step="0.01" placeholder="0" defaultValue={numStr(trade?.commission)} />
               </div>
             </TabsContent>
 
@@ -439,21 +505,21 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="grossProfit">Gross Profit</Label>
-                  <Input id="grossProfit" name="grossProfit" type="number" step="0.01" />
+                  <Input id="grossProfit" name="grossProfit" type="number" step="0.01" defaultValue={numStr(trade?.grossProfit)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="netProfit">Net Profit</Label>
-                  <Input id="netProfit" name="netProfit" type="number" step="0.01" />
+                  <Input id="netProfit" name="netProfit" type="number" step="0.01" defaultValue={numStr(trade?.netProfit)} />
                 </div>
                 {isForexOrCommodity(effectiveMarketType) && (
                   <div className="space-y-2">
                     <Label htmlFor="pips">Pips</Label>
-                    <Input id="pips" name="pips" type="number" step="0.1" />
+                    <Input id="pips" name="pips" type="number" step="0.1" defaultValue={numStr(trade?.pips)} />
                   </div>
                 )}
                 <div className="space-y-2">
                   <Label htmlFor="rMultiple">R-Multiple</Label>
-                  <Input id="rMultiple" name="rMultiple" type="number" step="0.01" placeholder="2.5" />
+                  <Input id="rMultiple" name="rMultiple" type="number" step="0.01" placeholder="2.5" defaultValue={numStr(trade?.rMultiple)} />
                 </div>
               </div>
             </TabsContent>
@@ -463,15 +529,15 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="stopLoss">Stop Loss</Label>
-                  <Input id="stopLoss" name="stopLoss" type="number" step="any" />
+                  <Input id="stopLoss" name="stopLoss" type="number" step="any" defaultValue={numStr(trade?.stopLoss)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="takeProfit">Take Profit</Label>
-                  <Input id="takeProfit" name="takeProfit" type="number" step="any" />
+                  <Input id="takeProfit" name="takeProfit" type="number" step="any" defaultValue={numStr(trade?.takeProfit)} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="riskPercent">Risk %</Label>
-                  <Input id="riskPercent" name="riskPercent" type="number" step="0.1" placeholder="1" />
+                  <Input id="riskPercent" name="riskPercent" type="number" step="0.1" placeholder="1" defaultValue={numStr(trade?.riskPercent)} />
                 </div>
               </div>
             </TabsContent>
@@ -480,11 +546,11 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
             <TabsContent value="notes" keepMounted className="space-y-3 mt-3">
               <div className="space-y-2">
                 <Label htmlFor="setup">Setup / Strategi</Label>
-                <Input id="setup" name="setup" placeholder="Mis: Breakout M30, Trend Following" />
+                <Input id="setup" name="setup" placeholder="Mis: Breakout M30, Trend Following" defaultValue={trade?.setup ?? ""} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="notes">Catatan</Label>
-                <Textarea id="notes" name="notes" rows={4} placeholder="Analisis, pelajaran, dll..." />
+                <Textarea id="notes" name="notes" rows={4} placeholder="Analisis, pelajaran, dll..." defaultValue={trade?.notes ?? ""} />
               </div>
             </TabsContent>
           </Tabs>
@@ -492,11 +558,15 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
           <div className="flex justify-end gap-2 pt-1">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>Batal</Button>
             <Button type="submit" disabled={isPending}>
-              {isPending ? "Menyimpan..." : "Simpan Trade"}
+              {isPending ? "Menyimpan..." : mode === "edit" ? "Simpan Perubahan" : "Simpan Trade"}
             </Button>
           </div>
         </form>
       </DialogContent>
     </Dialog>
   );
+}
+
+export function NewTradeDialog({ accounts }: { accounts: Account[] }) {
+  return <TradeFormDialog accounts={accounts} mode="create" />;
 }
