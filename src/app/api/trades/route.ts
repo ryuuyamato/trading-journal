@@ -115,15 +115,25 @@ export async function POST(req: Request) {
 
   const { tagIds, ...tradeData } = parsed.data;
 
-  const trade = await prisma.trade.create({
+  // Neon's HTTP driver doesn't support transactions, so a single create+include
+  // (which Prisma would run as an implicit transaction) fails with
+  // "Transactions are not supported in HTTP mode". Split into separate queries.
+  const created = await prisma.trade.create({
     data: {
       ...tradeData,
       openTime: new Date(tradeData.openTime),
       closeTime: tradeData.closeTime ? new Date(tradeData.closeTime) : null,
-      tags: tagIds.length > 0
-        ? { create: tagIds.map((tagId) => ({ tagId })) }
-        : undefined,
     },
+  });
+
+  if (tagIds.length > 0) {
+    await prisma.tradeTag.createMany({
+      data: tagIds.map((tagId) => ({ tradeId: created.id, tagId })),
+    });
+  }
+
+  const trade = await prisma.trade.findUniqueOrThrow({
+    where: { id: created.id },
     include: {
       account: { select: { name: true, marketType: true, currency: true } },
       tags: { include: { tag: true } },

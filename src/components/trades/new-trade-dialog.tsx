@@ -330,7 +330,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
             </TabsList>
 
             {/* Market-specific tab */}
-            <TabsContent value="market" className="space-y-3 mt-3">
+            <TabsContent value="market" keepMounted className="space-y-3 mt-3">
               {isForexOrCommodity(effectiveMarketType) && (
                 <>
                   <div className="grid grid-cols-2 gap-3">
@@ -430,7 +430,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
             </TabsContent>
 
             {/* P&L tab */}
-            <TabsContent value="pnl" className="space-y-3 mt-3">
+            <TabsContent value="pnl" keepMounted className="space-y-3 mt-3">
               {entryMode === "MULTI_LAYER" && (
                 <p className="text-xs text-muted-foreground bg-muted/50 rounded-md p-3">
                   Mode Multi-Layer: masukkan P&L langsung dari broker (tidak dikalkulasi otomatis)
@@ -459,7 +459,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
             </TabsContent>
 
             {/* Risk tab */}
-            <TabsContent value="risk" className="space-y-3 mt-3">
+            <TabsContent value="risk" keepMounted className="space-y-3 mt-3">
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
                   <Label htmlFor="stopLoss">Stop Loss</Label>
@@ -477,7 +477,7 @@ export function NewTradeDialog({ accounts }: NewTradeDialogProps) {
             </TabsContent>
 
             {/* Notes tab */}
-            <TabsContent value="notes" className="space-y-3 mt-3">
+            <TabsContent value="notes" keepMounted className="space-y-3 mt-3">
               <div className="space-y-2">
                 <Label htmlFor="setup">Setup / Strategi</Label>
                 <Input id="setup" name="setup" placeholder="Mis: Breakout M30, Trend Following" />
