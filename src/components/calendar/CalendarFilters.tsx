@@ -6,7 +6,12 @@ import { useCallback } from "react";
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY"];
 const IMPACTS = ["HIGH", "MEDIUM", "LOW", "HOLIDAY"];
 
-export function CalendarFilters() {
+interface CalendarFiltersProps {
+  defaultFrom: string;
+  defaultTo: string;
+}
+
+export function CalendarFilters({ defaultFrom, defaultTo }: CalendarFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -44,7 +49,7 @@ export function CalendarFilters() {
         <label className="text-[11px] text-muted-foreground">Dari</label>
         <input
           type="date"
-          value={from ?? ""}
+          value={from ?? defaultFrom}
           onChange={(e) => setParam("from", e.target.value || null)}
           className="text-[12px] px-2 py-1 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />
@@ -53,7 +58,7 @@ export function CalendarFilters() {
         <label className="text-[11px] text-muted-foreground">Sampai</label>
         <input
           type="date"
-          value={to ?? ""}
+          value={to ?? defaultTo}
           onChange={(e) => setParam("to", e.target.value || null)}
           className="text-[12px] px-2 py-1 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
         />

@@ -7,8 +7,8 @@ export type FeedWeek = "thisweek" | "nextweek";
 export interface FfEvent {
   title: string;
   country: string;
-  date: string;     // "MM-DD-YYYY"
-  time: string;     // "8:30am" | "All Day" | "Tentative"
+  date: string;     // ISO 8601 datetime with offset (newer feeds), or "MM-DD-YYYY" (older feeds)
+  time?: string;    // "8:30am" | "All Day" | "Tentative" — only present on older "MM-DD-YYYY" feeds
   impact: string;   // "High" | "Medium" | "Low" | "Holiday"
   forecast: string;
   previous: string;

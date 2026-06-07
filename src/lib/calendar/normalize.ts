@@ -2,6 +2,14 @@ import { createHash } from "crypto";
 import type { FfEvent } from "./fetch";
 import { Impact } from "@/generated/prisma/enums";
 
+// Default calendar view: today through the next 7 days, in WIB (Asia/Jakarta).
+export function getDefaultDateRange(): { from: string; to: string } {
+  const now = new Date();
+  const future = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const fmt = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
+  return { from: fmt(now), to: fmt(future) };
+}
+
 export interface NormalizedEvent {
   externalId: string;
   title: string;
@@ -22,7 +30,7 @@ function normalizeEvent(e: FfEvent): NormalizedEvent | null {
   if (!eventTime) return null;
 
   const externalId = createHash("sha256")
-    .update(`${e.country}|${e.date}|${e.time}|${e.title}`)
+    .update(`${e.country}|${e.date}|${e.time ?? ""}|${e.title}`)
     .digest("hex")
     .slice(0, 32);
 
@@ -38,8 +46,15 @@ function normalizeEvent(e: FfEvent): NormalizedEvent | null {
   };
 }
 
-function parseEventTime(date: string, time: string): Date | null {
-  // ForexFactory date: "MM-DD-YYYY"
+function parseEventTime(date: string, time?: string): Date | null {
+  // Newer FF feeds send `date` as a full ISO 8601 datetime with offset,
+  // e.g. "2026-06-07T05:15:00-04:00" — parse it directly.
+  if (date.includes("T")) {
+    const d = new Date(date);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // Older FF feeds: date "MM-DD-YYYY", time "8:30am" | "All Day" | "Tentative"
   const [month, day, year] = date.split("-");
   if (!month || !day || !year) return null;
   const iso = `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}`;

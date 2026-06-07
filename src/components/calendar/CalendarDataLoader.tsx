@@ -13,8 +13,10 @@ interface SearchParams {
 
 export async function CalendarDataLoader({
   searchParams,
+  defaultRange,
 }: {
   searchParams: Promise<SearchParams>;
+  defaultRange: { from: string; to: string };
 }) {
   try {
     const params = await searchParams;
@@ -46,12 +48,12 @@ export async function CalendarDataLoader({
     const impactFilter = params.impact
       ? params.impact.split(",").map((i) => i.trim().toUpperCase())
       : null;
-    const fromFilter = params.from ? new Date(params.from + "T00:00:00Z") : null;
-    const toFilter = params.to ? new Date(params.to + "T23:59:59Z") : null;
+    // Default to "today → +7 days" (WIB) so the page always opens on a useful window
+    const fromFilter = new Date((params.from ?? defaultRange.from) + "T00:00:00Z");
+    const toFilter = new Date((params.to ?? defaultRange.to) + "T23:59:59Z");
 
     let filtered = allEvents;
-    if (fromFilter) filtered = filtered.filter((e) => e.eventTime >= fromFilter!);
-    if (toFilter) filtered = filtered.filter((e) => e.eventTime <= toFilter!);
+    filtered = filtered.filter((e) => e.eventTime >= fromFilter && e.eventTime <= toFilter);
     if (currencyFilter) filtered = filtered.filter((e) => e.country === currencyFilter);
     if (impactFilter)
       filtered = filtered.filter((e) => impactFilter.includes(e.impact as string));
