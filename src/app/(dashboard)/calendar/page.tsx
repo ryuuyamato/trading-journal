@@ -3,6 +3,11 @@ import { CalendarFilters } from "@/components/calendar/CalendarFilters";
 import { CalendarDataLoader } from "@/components/calendar/CalendarDataLoader";
 import { CalendarSkeleton } from "@/components/calendar/CalendarSkeleton";
 
+// ForexFactory fetches can take several seconds on a cache miss (two feeds +
+// AI-analysis lookup); the platform default function timeout is too short and
+// surfaces as a 504 FUNCTION_INVOCATION_TIMEOUT.
+export const maxDuration = 30;
+
 interface SearchParams {
   from?: string;
   to?: string;
