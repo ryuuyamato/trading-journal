@@ -12,6 +12,7 @@ import {
   BarChart2,
   ClipboardList,
   Calendar,
+  CalendarOff,
   Newspaper,
   ShieldCheck,
   ChevronDown,
@@ -47,6 +48,7 @@ const TOP_NAV = [
   { href: "/dashboard", label: "Dashboard",          icon: LayoutDashboard },
   { href: "/trades",    label: "Jurnal",              icon: BookOpen },
   { href: "/calendar",  label: "Kalender Ekonomi",    icon: Calendar },
+  { href: "/no-trade-days", label: "No Trade Day",    icon: CalendarOff },
 ];
 
 const BOTTOM_NAV = [
