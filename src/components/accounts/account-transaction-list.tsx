@@ -30,7 +30,7 @@ function formatAmount(amount: number, currency: string, type: string) {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+  return new Date(iso).toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" });
 }
 
 export function AccountTransactionList({

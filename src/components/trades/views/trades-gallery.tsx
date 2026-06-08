@@ -6,7 +6,7 @@ import { PropertyPill } from "@/components/ui/property-pill";
 import type { TradeListItem } from "@/components/trades/types";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric" });
+  return new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Jakarta" });
 }
 
 export function TradesGallery({ trades }: { trades: TradeListItem[] }) {

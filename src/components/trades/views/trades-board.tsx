@@ -32,7 +32,7 @@ function formatPnl(v: number | null, currency = "USD") {
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short" });
+  return new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short", timeZone: "Asia/Jakarta" });
 }
 
 export function TradesBoard({ trades }: { trades: TradeListItem[] }) {

@@ -34,6 +34,7 @@ export function formatDate(date: Date | string) {
     day: "numeric",
     month: "short",
     year: "numeric",
+    timeZone: "Asia/Jakarta",
   }).format(new Date(date))
 }
 
@@ -44,5 +45,6 @@ export function formatDateTime(date: Date | string) {
     year: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Jakarta",
   }).format(new Date(date))
 }

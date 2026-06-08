@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const userId = session!.user!.id!;
 
   const now = new Date();
-  const monthLabel = now.toLocaleString("id-ID", { month: "long", year: "numeric" });
+  const monthLabel = now.toLocaleString("id-ID", { month: "long", year: "numeric", timeZone: "Asia/Jakarta" });
 
   const [stats, heatmap] = await Promise.all([
     getDashboardStats(userId),

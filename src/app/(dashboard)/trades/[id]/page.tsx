@@ -11,7 +11,7 @@ import type { TradeFormValues } from "@/components/trades/trade-form-dialog";
 
 function formatDateTime(d: Date | null) {
   if (!d) return "–";
-  return d.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short" });
+  return d.toLocaleString("id-ID", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Jakarta" });
 }
 
 function formatPnl(v: number | null, currency = "USD") {
