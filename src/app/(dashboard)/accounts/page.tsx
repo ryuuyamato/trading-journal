@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { CreateAccountDialog } from "@/components/accounts/create-account-dialog";
+import { AccountFormDialog } from "@/components/accounts/account-form-dialog";
+import { AccountRowActions } from "@/components/accounts/account-row-actions";
+import { AccountRow } from "@/components/accounts/account-row";
 import { PropertyPill } from "@/components/ui/property-pill";
 import { formatCentWithUsd } from "@/lib/utils";
 
@@ -31,7 +33,7 @@ export default async function AccountsPage() {
           <h1 className="text-[20px] font-medium">Akun</h1>
           <p className="text-[12px] text-muted-foreground mt-0.5">Kelola akun trading Anda</p>
         </div>
-        <CreateAccountDialog />
+        <AccountFormDialog mode="create" />
       </div>
 
       {accounts.length === 0 ? (
@@ -49,11 +51,29 @@ export default async function AccountsPage() {
                 <th className="text-left py-2 px-4 text-[11px] text-muted-foreground font-medium">Broker</th>
                 <th className="text-right py-2 px-4 text-[11px] text-muted-foreground font-medium">Modal</th>
                 <th className="text-right py-2 px-4 text-[11px] text-muted-foreground font-medium">Trade</th>
+                <th className="w-10" />
               </tr>
             </thead>
             <tbody>
               {accounts.map((acc) => (
-                <tr key={acc.id} className="border-b border-border last:border-0 hover:bg-secondary/40 transition-colors">
+                <AccountRow
+                  key={acc.id}
+                  accountId={acc.id}
+                  actions={
+                    <AccountRowActions
+                      account={{
+                        id: acc.id,
+                        name: acc.name,
+                        broker: acc.broker,
+                        marketType: acc.marketType,
+                        currency: acc.currency,
+                        balance: acc.balance,
+                        description: acc.description,
+                      }}
+                      tradeCount={acc._count.trades}
+                    />
+                  }
+                >
                   <td className="py-2.5 px-4">
                     <div className="flex items-center gap-2">
                       <span
@@ -77,7 +97,7 @@ export default async function AccountsPage() {
                   <td className="py-2.5 px-4 text-right text-[13px] text-muted-foreground">
                     {acc._count.trades}
                   </td>
-                </tr>
+                </AccountRow>
               ))}
             </tbody>
           </table>
