@@ -12,6 +12,8 @@ import {
   BarChart2,
   ClipboardList,
   Calendar,
+  Newspaper,
+  ShieldCheck,
   ChevronDown,
   Search,
   ChevronRight,
@@ -38,6 +40,7 @@ interface Account {
 interface SidebarNavProps {
   userName?: string | null;
   accounts: Account[];
+  isAdmin?: boolean;
 }
 
 const TOP_NAV = [
@@ -50,9 +53,10 @@ const BOTTOM_NAV = [
   { href: "/playbook", label: "Playbook",  icon: Library },
   { href: "/analitik", label: "Analitik",  icon: BarChart2 },
   { href: "/review",   label: "Review",    icon: ClipboardList },
+  { href: "/blog",     label: "Blog",      icon: Newspaper },
 ];
 
-export function SidebarNav({ userName, accounts }: SidebarNavProps) {
+export function SidebarNav({ userName, accounts, isAdmin }: SidebarNavProps) {
   const pathname = usePathname();
   const [accountsOpen, setAccountsOpen] = useState(true);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -181,6 +185,22 @@ export function SidebarNav({ userName, accounts }: SidebarNavProps) {
             {label}
           </Link>
         ))}
+
+        {isAdmin && (
+          <Link
+            href="/admin"
+            onClick={() => setMobileOpen(false)}
+            className={cn(
+              "flex items-center gap-2 px-2 py-1.5 rounded-md text-[13px] transition-colors",
+              pathname.startsWith("/admin")
+                ? "bg-sidebar-accent text-sidebar-foreground font-medium"
+                : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            )}
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            Admin Panel
+          </Link>
+        )}
       </nav>
     </>
   );

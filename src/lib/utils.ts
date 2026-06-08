@@ -5,6 +5,15 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function slugify(value: string) {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
 // Cent ("USC") accounts: 100 cent = 1 USD — show the raw cent amount plus its USD equivalent.
 export function formatCentWithUsd(absValue: number, sign: string) {
   const fmt = (n: number) =>

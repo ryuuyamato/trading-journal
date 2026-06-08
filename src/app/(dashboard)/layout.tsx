@@ -19,7 +19,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
-      <SidebarNav userName={session.user.name} accounts={accounts} />
+      <SidebarNav userName={session.user.name} accounts={accounts} isAdmin={session.user.role === "ADMIN"} />
       <main className="flex-1 overflow-y-auto">
         <div className="px-4 pt-18 pb-6 md:px-8 md:py-6">{children}</div>
       </main>

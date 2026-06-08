@@ -12,6 +12,7 @@ export const authConfig: NextAuthConfig = {
 
       const isAuthPage = pathname === "/login" || pathname === "/register";
       const isApiAuth  = pathname.startsWith("/api/auth");
+      const isPendingPage = pathname === "/pending";
 
       if (isApiAuth) return true;
 
@@ -21,14 +22,35 @@ export const authConfig: NextAuthConfig = {
       }
 
       if (!isLoggedIn) return false;
+
+      const { role, status } = auth.user;
+      const isApproved = role === "ADMIN" || status === "APPROVED";
+
+      if (!isApproved) {
+        if (isPendingPage) return true;
+        return Response.redirect(new URL("/pending", nextUrl));
+      }
+
+      if (isPendingPage) return Response.redirect(new URL("/dashboard", nextUrl));
+
+      if (pathname.startsWith("/admin") && role !== "ADMIN") {
+        return Response.redirect(new URL("/dashboard", nextUrl));
+      }
+
       return true;
     },
     jwt({ token, user }) {
-      if (user) token.id = user.id;
+      if (user) {
+        token.id = user.id!;
+        token.role = user.role;
+        token.status = user.status;
+      }
       return token;
     },
     session({ session, token }) {
-      session.user.id = token.id as string;
+      session.user.id = token.id;
+      session.user.role = token.role;
+      session.user.status = token.status;
       return session;
     },
   },
