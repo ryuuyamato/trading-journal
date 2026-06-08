@@ -115,6 +115,8 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
     description: account.description,
   };
 
+  const balance = account.balance + stats.totalNetProfit;
+
   const profitTrend =
     stats.totalNetProfit > 0 ? "positive" : stats.totalNetProfit < 0 ? "negative" : "neutral";
 
@@ -149,7 +151,6 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
           <p className="text-[12px] text-muted-foreground">
             {account.broker ? `${account.broker} · ` : ""}
             Modal {formatBalance(account.currency, account.balance)}
-            {" · "}Balance {formatBalance(account.currency, account.balance + stats.totalNetProfit)}
             {account.description ? ` · ${account.description}` : ""}
           </p>
         </div>
@@ -157,6 +158,30 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
           <AccountTransactionActions accountId={account.id} />
           <AccountDetailActions account={formValues} tradeCount={account._count.trades} />
         </div>
+      </div>
+
+      {/* Balance highlight */}
+      <div
+        className="rounded-xl border px-4 py-3.5 flex items-center justify-between flex-wrap gap-2"
+        style={{
+          backgroundColor: `color-mix(in srgb, var(--color-${profitTrend === "negative" ? "loss" : "profit"}) 8%, transparent)`,
+          borderColor: `color-mix(in srgb, var(--color-${profitTrend === "negative" ? "loss" : "profit"}) 25%, transparent)`,
+        }}
+      >
+        <div>
+          <p className="text-[12px] text-muted-foreground">Balance</p>
+          <p
+            className="text-[26px] font-semibold leading-tight mt-0.5"
+            style={{ color: profitTrend === "negative" ? "var(--color-loss)" : "var(--color-profit)" }}
+          >
+            {formatBalance(account.currency, balance)}
+          </p>
+        </div>
+        <p className="text-[11px] text-muted-foreground text-right">
+          Modal {formatBalance(account.currency, account.balance)}
+          <br />
+          {netPnlStr} dari {stats.totalTrades} trade tertutup
+        </p>
       </div>
 
       {/* Metric cards */}

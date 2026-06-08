@@ -104,8 +104,24 @@ export default async function AccountsPage() {
                       ? formatCentWithUsd(acc.balance, "")
                       : `${acc.currency} ${acc.balance.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`}
                   </td>
-                  <td className="py-2.5 px-4 text-right text-[13px] font-medium">
-                    {formatAmount(acc.currency, acc.balance + (profitMap.get(acc.id) ?? 0))}
+                  <td className="py-2.5 px-4 text-right text-[13px] font-semibold">
+                    {(() => {
+                      const netProfit = profitMap.get(acc.id) ?? 0;
+                      return (
+                        <span
+                          style={{
+                            color:
+                              netProfit > 0
+                                ? "var(--color-profit)"
+                                : netProfit < 0
+                                ? "var(--color-loss)"
+                                : "var(--color-foreground)",
+                          }}
+                        >
+                          {formatAmount(acc.currency, acc.balance + netProfit)}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="py-2.5 px-4 text-right text-[13px] text-muted-foreground">
                     {acc._count.trades}
