@@ -21,6 +21,17 @@ function formatDate(iso: string) {
   return new Date(iso).toLocaleString("id-ID", { day: "numeric", month: "short" });
 }
 
+function formatDateRange(openTime: string, closeTime: string | null) {
+  const open = formatDate(openTime);
+  return closeTime ? `${open} → ${formatDate(closeTime)}` : open;
+}
+
+function directionLabel(direction: string, marketType: string | null) {
+  const isCrypto = marketType === "CRYPTO_SPOT" || marketType === "CRYPTO_FUTURES";
+  if (isCrypto) return direction === "LONG" ? "Long" : "Short";
+  return direction === "LONG" ? "Buy" : "Sell";
+}
+
 export function TradesTable({ trades, accounts }: { trades: TradeListItem[]; accounts: AccountOption[] }) {
   const router = useRouter();
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -86,9 +97,15 @@ export function TradesTable({ trades, accounts }: { trades: TradeListItem[]; acc
                   <div className="flex items-center gap-2">
                     <span className="text-[11px] text-muted-foreground opacity-60">📄</span>
                     <div>
-                      <span className="text-[13px] font-medium">{trade.symbol}</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[13px] font-medium">{trade.symbol}</span>
+                        <PropertyPill
+                          variant={trade.direction === "LONG" ? "profit" : "loss"}
+                          label={directionLabel(trade.direction, marketType)}
+                        />
+                      </div>
                       <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
-                        {formatDate(trade.openTime)}
+                        {formatDateRange(trade.openTime, trade.closeTime)}
                       </p>
                     </div>
                   </div>
