@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { PropertyPill } from "@/components/ui/property-pill";
 import { AccountDetailActions } from "@/components/accounts/account-detail-actions";
+import { AccountTransactionActions } from "@/components/accounts/account-transaction-actions";
+import { AccountTransactionList, type AccountTransactionItem } from "@/components/accounts/account-transaction-list";
 import { TradesTable } from "@/components/trades/views/trades-table";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EquityCurve } from "@/components/dashboard/equity-curve";
@@ -31,7 +33,7 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
   });
   if (!account) notFound();
 
-  const [trades, stats, heatmap] = await Promise.all([
+  const [trades, stats, heatmap, transactions] = await Promise.all([
     prisma.trade.findMany({
       where: { accountId: account.id },
       include: {
@@ -44,7 +46,19 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
     }),
     getDashboardStats(userId, account.id),
     getCalendarHeatmap(userId, account.id),
+    prisma.accountTransaction.findMany({
+      where: { accountId: account.id },
+      orderBy: { occurredAt: "desc" },
+    }),
   ]);
+
+  const transactionItems: AccountTransactionItem[] = transactions.map((tx) => ({
+    id: tx.id,
+    type: tx.type,
+    amount: tx.amount,
+    note: tx.note,
+    occurredAt: tx.occurredAt.toISOString(),
+  }));
 
   const items: TradeListItem[] = trades.map((trade) => ({
     id: trade.id,
@@ -138,7 +152,10 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
             {account.description ? ` · ${account.description}` : ""}
           </p>
         </div>
-        <AccountDetailActions account={formValues} tradeCount={account._count.trades} />
+        <div className="flex items-center gap-2">
+          <AccountTransactionActions accountId={account.id} />
+          <AccountDetailActions account={formValues} tradeCount={account._count.trades} />
+        </div>
       </div>
 
       {/* Metric cards */}
@@ -169,6 +186,12 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <EquityCurve data={stats.equityCurve} />
         <CalendarHeatmap data={heatmap} />
+      </div>
+
+      {/* Deposit / withdraw history */}
+      <div className="space-y-2">
+        <h2 className="text-[14px] font-medium">Riwayat Deposit &amp; Withdraw</h2>
+        <AccountTransactionList accountId={account.id} currency={account.currency} transactions={transactionItems} />
       </div>
 
       {/* Trade history */}
