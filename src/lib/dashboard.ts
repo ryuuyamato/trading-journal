@@ -15,9 +15,21 @@ export async function getDashboardStats(userId: string, accountId?: string) {
       direction: true,
       openTime: true,
       closeTime: true,
+      account: { select: { currency: true } },
     },
     orderBy: { closeTime: "asc" },
   });
+
+  // When blending trades across accounts, normalize P&L to USD-equivalent so the totals stay
+  // meaningful — e.g. a "USC" account stores values in cents (100 cent = 1 USD, see
+  // formatCentWithUsd), so its raw numbers are ~100x larger than a USD/USDT account's.
+  // For a single account (accountId given), keep raw native-currency values — the caller
+  // formats those with its own currency-aware logic (e.g. account detail page).
+  const pnl = (t: (typeof trades)[number]) => {
+    const amount = t.netProfit ?? 0;
+    if (accountId) return amount;
+    return t.account.currency === "USC" ? amount / 100 : amount;
+  };
 
   const totalTrades = trades.length;
   if (totalTrades === 0) {
@@ -29,14 +41,14 @@ export async function getDashboardStats(userId: string, accountId?: string) {
     };
   }
 
-  const winners = trades.filter((t) => (t.netProfit ?? 0) > 0);
-  const losers = trades.filter((t) => (t.netProfit ?? 0) < 0);
+  const winners = trades.filter((t) => pnl(t) > 0);
+  const losers = trades.filter((t) => pnl(t) < 0);
 
   const winRate = (winners.length / totalTrades) * 100;
-  const grossWin = winners.reduce((s, t) => s + (t.netProfit ?? 0), 0);
-  const grossLoss = Math.abs(losers.reduce((s, t) => s + (t.netProfit ?? 0), 0));
+  const grossWin = winners.reduce((s, t) => s + pnl(t), 0);
+  const grossLoss = Math.abs(losers.reduce((s, t) => s + pnl(t), 0));
   const profitFactor = grossLoss === 0 ? grossWin : grossWin / grossLoss;
-  const totalNetProfit = trades.reduce((s, t) => s + (t.netProfit ?? 0), 0);
+  const totalNetProfit = trades.reduce((s, t) => s + pnl(t), 0);
 
   const avgWin = winners.length ? grossWin / winners.length : 0;
   const avgLoss = losers.length ? grossLoss / losers.length : 0;
@@ -46,15 +58,15 @@ export async function getDashboardStats(userId: string, accountId?: string) {
 
   const longTrades = trades.filter((t) => t.direction === "LONG");
   const shortTrades = trades.filter((t) => t.direction === "SHORT");
-  const longWins = longTrades.filter((t) => (t.netProfit ?? 0) > 0).length;
-  const shortWins = shortTrades.filter((t) => (t.netProfit ?? 0) > 0).length;
+  const longWins = longTrades.filter((t) => pnl(t) > 0).length;
+  const shortWins = shortTrades.filter((t) => pnl(t) > 0).length;
 
   // Win/loss streaks in chronological order — a breakeven trade (netProfit === 0) resets the streak
   let runningStreak = 0;
   let runningType: "win" | "loss" | null = null;
   let longestWinStreak = 0;
   for (const t of trades) {
-    const profit = t.netProfit ?? 0;
+    const profit = pnl(t);
     if (profit > 0) {
       runningStreak = runningType === "win" ? runningStreak + 1 : 1;
       runningType = "win";
@@ -71,7 +83,7 @@ export async function getDashboardStats(userId: string, accountId?: string) {
   // Build equity curve (cumulative profit over time)
   let cumulative = 0;
   const equityCurve = trades.map((t) => {
-    cumulative += t.netProfit ?? 0;
+    cumulative += pnl(t);
     return {
       date: (t.closeTime ?? t.openTime).toISOString().slice(0, 10),
       equity: Math.round(cumulative * 100) / 100,
@@ -88,6 +100,21 @@ export async function getDashboardStats(userId: string, accountId?: string) {
     currentStreakType: runningType ?? "none",
     longestWinStreak,
   };
+}
+
+// Current balance per account = modal (account.balance, adjusted by deposits/withdrawals)
+// + cumulative net P&L from closed trades. Returns a map of accountId -> closed-trade P&L sum
+// (in the account's own native currency/units) so callers can add it to `account.balance`.
+export async function getAccountNetProfitMap(accountIds: string[]) {
+  if (accountIds.length === 0) return new Map<string, number>();
+
+  const sums = await prisma.trade.groupBy({
+    by: ["accountId"],
+    where: { accountId: { in: accountIds }, status: TradeStatus.CLOSED },
+    _sum: { netProfit: true },
+  });
+
+  return new Map(sums.map((s) => [s.accountId, s._sum.netProfit ?? 0]));
 }
 
 export async function getCalendarHeatmap(userId: string, accountId?: string) {

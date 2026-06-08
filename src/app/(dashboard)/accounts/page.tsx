@@ -5,6 +5,13 @@ import { AccountRowActions } from "@/components/accounts/account-row-actions";
 import { AccountRow } from "@/components/accounts/account-row";
 import { PropertyPill } from "@/components/ui/property-pill";
 import { formatCentWithUsd } from "@/lib/utils";
+import { getAccountNetProfitMap } from "@/lib/dashboard";
+
+function formatAmount(currency: string, amount: number) {
+  return currency === "USC"
+    ? formatCentWithUsd(amount, "")
+    : `${currency} ${amount.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`;
+}
 
 const MARKET_DOT_COLORS: Record<string, string> = {
   FOREX: "#378ADD",
@@ -25,6 +32,8 @@ export default async function AccountsPage() {
     include: { _count: { select: { trades: true } } },
     orderBy: { createdAt: "desc" },
   });
+
+  const profitMap = await getAccountNetProfitMap(accounts.map((a) => a.id));
 
   return (
     <div className="max-w-3xl space-y-4">
@@ -50,6 +59,7 @@ export default async function AccountsPage() {
                 <th className="text-left py-2 px-4 text-[11px] text-muted-foreground font-medium">Market</th>
                 <th className="text-left py-2 px-4 text-[11px] text-muted-foreground font-medium">Broker</th>
                 <th className="text-right py-2 px-4 text-[11px] text-muted-foreground font-medium">Modal</th>
+                <th className="text-right py-2 px-4 text-[11px] text-muted-foreground font-medium">Balance</th>
                 <th className="text-right py-2 px-4 text-[11px] text-muted-foreground font-medium">Trade</th>
                 <th className="w-10" />
               </tr>
@@ -93,6 +103,9 @@ export default async function AccountsPage() {
                     {acc.currency === "USC"
                       ? formatCentWithUsd(acc.balance, "")
                       : `${acc.currency} ${acc.balance.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`}
+                  </td>
+                  <td className="py-2.5 px-4 text-right text-[13px] font-medium">
+                    {formatAmount(acc.currency, acc.balance + (profitMap.get(acc.id) ?? 0))}
                   </td>
                   <td className="py-2.5 px-4 text-right text-[13px] text-muted-foreground">
                     {acc._count.trades}

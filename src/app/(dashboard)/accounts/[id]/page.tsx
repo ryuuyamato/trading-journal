@@ -149,6 +149,7 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
           <p className="text-[12px] text-muted-foreground">
             {account.broker ? `${account.broker} · ` : ""}
             Modal {formatBalance(account.currency, account.balance)}
+            {" · "}Balance {formatBalance(account.currency, account.balance + stats.totalNetProfit)}
             {account.description ? ` · ${account.description}` : ""}
           </p>
         </div>
