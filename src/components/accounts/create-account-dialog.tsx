@@ -33,7 +33,7 @@ const MARKET_TYPES = [
   { value: "MULTI_ASSET", label: "Multi Asset (IB / Universal)" },
 ];
 
-const CURRENCIES = ["USD", "IDR", "EUR", "USDT"];
+const CURRENCIES = ["USD", "IDR", "EUR", "USDT", "USC"];
 
 export function CreateAccountDialog() {
   const router = useRouter();

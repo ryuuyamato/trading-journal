@@ -22,7 +22,9 @@ function formatPnlShort(v: number, currency: string) {
   if (currency === "IDR") {
     return `${prefix}Rp${abs >= 1_000_000 ? `${(abs / 1_000_000).toFixed(1)}jt` : abs.toLocaleString("id-ID")}`;
   }
-  return `${prefix}$${abs >= 1000 ? `${(abs / 1000).toFixed(1)}k` : abs.toFixed(0)}`;
+  // Cent ("USC") accounts: 100 cent = 1 USD — show the USD-converted figure (badge is too small for both).
+  const usdAbs = currency === "USC" ? abs / 100 : abs;
+  return `${prefix}$${usdAbs >= 1000 ? `${(usdAbs / 1000).toFixed(1)}k` : usdAbs.toFixed(0)}`;
 }
 
 export function TradesCalendar({ trades }: { trades: TradeListItem[] }) {

@@ -7,6 +7,7 @@ import { Plus } from "lucide-react";
 import { TradeFormDialog } from "@/components/trades/trade-form-dialog";
 import { useState } from "react";
 import type { AccountOption, TradeListItem } from "@/components/trades/types";
+import { formatCentWithUsd } from "@/lib/utils";
 
 function formatPnl(v: number | null, currency = "USD") {
   if (v === null) return "–";
@@ -14,6 +15,7 @@ function formatPnl(v: number | null, currency = "USD") {
   if (currency === "IDR") {
     return `${prefix}Rp ${Math.abs(v).toLocaleString("id-ID")}`;
   }
+  if (currency === "USC") return formatCentWithUsd(Math.abs(v), prefix);
   return `${prefix}$${Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 

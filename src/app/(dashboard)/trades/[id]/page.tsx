@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { PropertyPill } from "@/components/ui/property-pill";
 import { TradeDetailActions } from "@/components/trades/trade-detail-actions";
 import { TradeScreenshots } from "@/components/trades/trade-screenshots";
+import { formatCentWithUsd } from "@/lib/utils";
 import type { TradeFormValues } from "@/components/trades/trade-form-dialog";
 
 function formatDateTime(d: Date | null) {
@@ -19,6 +20,7 @@ function formatPnl(v: number | null, currency = "USD") {
   if (currency === "IDR") {
     return `${prefix}Rp ${Math.abs(v).toLocaleString("id-ID")}`;
   }
+  if (currency === "USC") return formatCentWithUsd(Math.abs(v), prefix);
   return `${prefix}$${Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 

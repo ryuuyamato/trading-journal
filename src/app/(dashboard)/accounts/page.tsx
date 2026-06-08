@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { CreateAccountDialog } from "@/components/accounts/create-account-dialog";
 import { PropertyPill } from "@/components/ui/property-pill";
+import { formatCentWithUsd } from "@/lib/utils";
 
 const MARKET_DOT_COLORS: Record<string, string> = {
   FOREX: "#378ADD",
@@ -69,7 +70,9 @@ export default async function AccountsPage() {
                     {acc.broker ?? "–"}
                   </td>
                   <td className="py-2.5 px-4 text-right text-[13px]">
-                    {acc.currency} {acc.balance.toLocaleString("id-ID", { maximumFractionDigits: 0 })}
+                    {acc.currency === "USC"
+                      ? formatCentWithUsd(acc.balance, "")
+                      : `${acc.currency} ${acc.balance.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`}
                   </td>
                   <td className="py-2.5 px-4 text-right text-[13px] text-muted-foreground">
                     {acc._count.trades}

@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { PropertyPill } from "@/components/ui/property-pill";
+import { formatCentWithUsd } from "@/lib/utils";
 import type { TradeListItem } from "@/components/trades/types";
 
 type ColumnKey = "OPEN" | "PROFIT" | "LOSS" | "BREAK_EVEN";
@@ -26,6 +27,7 @@ function formatPnl(v: number | null, currency = "USD") {
   if (v === null) return "–";
   const prefix = v >= 0 ? "+" : "";
   if (currency === "IDR") return `${prefix}Rp ${Math.abs(v).toLocaleString("id-ID")}`;
+  if (currency === "USC") return formatCentWithUsd(Math.abs(v), prefix);
   return `${prefix}$${Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
