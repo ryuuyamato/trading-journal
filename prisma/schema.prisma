@@ -33,6 +33,7 @@ model User {
   tradingAccounts TradingAccount[]
   tags            Tag[]
   blogPosts       BlogPost[]
+  analysisReports TradeAnalysisReport[]
 }
 
 // ─── Blog ────────────────────────────────────────────────────────────────────
@@ -72,6 +73,7 @@ model TradingAccount {
   user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   trades       Trade[]
   transactions AccountTransaction[]
+  analysisReports TradeAnalysisReport[]
 }
 
 enum TransactionType {
@@ -204,6 +206,22 @@ model EventAnalysis {
   instruments String[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model TradeAnalysisReport {
+  id            String   @id @default(cuid())
+  userId        String
+  accountId     String
+  period        String   // "YYYY-MM" (WIB) — bulan yang dianalisis
+  headline      String
+  content       Json     // { overview, strengths[], weaknesses[], recommendations[] }
+  statsSnapshot Json     // snapshot angka kunci yang dikirim ke AI
+  createdAt     DateTime @default(now())
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, period])
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────

@@ -13,6 +13,7 @@ import {
   ClipboardList,
   Calendar,
   CalendarOff,
+  Sparkles,
   Newspaper,
   ShieldCheck,
   ChevronDown,
@@ -49,6 +50,7 @@ const TOP_NAV = [
   { href: "/trades",    label: "Jurnal",              icon: BookOpen },
   { href: "/calendar",  label: "Kalender Ekonomi",    icon: Calendar },
   { href: "/no-trade-days", label: "No Trade Day",    icon: CalendarOff },
+  { href: "/analisis-ai",   label: "Analisis AI",      icon: Sparkles },
 ];
 
 const BOTTOM_NAV = [
