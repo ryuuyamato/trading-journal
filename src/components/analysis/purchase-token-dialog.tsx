@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
-import { PRICE_PER_TOKEN_IDR } from "@/lib/analysis/quota";
+import { PRICE_PER_TOKEN_IDR } from "@/lib/analysis/constants";
 
 interface Props {
   accountId: string;

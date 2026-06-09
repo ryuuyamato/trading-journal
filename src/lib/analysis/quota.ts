@@ -1,7 +1,6 @@
 import { prisma } from "@/lib/prisma";
-
-export const MONTHLY_ANALYSIS_LIMIT = 1;
-export const PRICE_PER_TOKEN_IDR = 10_000;
+import { MONTHLY_ANALYSIS_LIMIT, PRICE_PER_TOKEN_IDR } from "@/lib/analysis/constants";
+export { MONTHLY_ANALYSIS_LIMIT, PRICE_PER_TOKEN_IDR };
 
 const WIB_FMT = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
 
