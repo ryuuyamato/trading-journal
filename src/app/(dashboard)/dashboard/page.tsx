@@ -7,20 +7,25 @@ import { CalendarHeatmap } from "@/components/dashboard/calendar-heatmap";
 import { DirectionBreakdown } from "@/components/dashboard/direction-breakdown";
 import { WinLossBreakdown } from "@/components/dashboard/win-loss-breakdown";
 import { getExchangeRates, toIdr, formatIdr } from "@/lib/exchange-rates";
+import { TradeStatus } from "@/generated/prisma/enums";
 
-function MarketTypePill({ type }: { type: string }) {
-  const label: Record<string, string> = {
-    FOREX: "Forex",
-    COMMODITY: "Komoditas",
-    STOCK_IDX: "Saham IDX",
-    STOCK_US: "Saham US",
-    CRYPTO_SPOT: "Crypto Spot",
-    CRYPTO_FUTURES: "Crypto Futures",
-    MULTI_ASSET: "Multi Aset",
-  };
-  return (
-    <span className="text-[11px] text-muted-foreground">{label[type] ?? type}</span>
-  );
+const MARKET_LABEL: Record<string, string> = {
+  FOREX: "Forex",
+  COMMODITY: "Komoditas",
+  STOCK_IDX: "Saham IDX",
+  STOCK_US: "Saham US",
+  CRYPTO_SPOT: "Crypto Spot",
+  CRYPTO_FUTURES: "Crypto Futures",
+  MULTI_ASSET: "Multi Aset",
+};
+
+function fmtBalance(amount: number, currency: string): string {
+  if (currency === "IDR") return `Rp ${Math.round(amount).toLocaleString("id-ID")}`;
+  if (currency === "USC") {
+    const usd = amount / 100;
+    return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return `${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
 export default async function DashboardPage() {
@@ -40,6 +45,34 @@ export default async function DashboardPage() {
     }),
     getExchangeRates(),
   ]);
+
+  // Compute total saldo = balance (modal ± deposit/withdrawal) + realised net P&L
+  // USC accounts store P&L in cents too, so no special handling needed for the sum.
+  const pnlRows = await prisma.trade.groupBy({
+    by: ["accountId"],
+    where: {
+      accountId: { in: accounts.map((a) => a.id) },
+      status: TradeStatus.CLOSED,
+      netProfit: { not: null },
+    },
+    _sum: { netProfit: true },
+  });
+  const pnlByAccount = Object.fromEntries(pnlRows.map((r) => [r.accountId, r._sum.netProfit ?? 0]));
+
+  const accountsWithTotal = accounts.map((acc) => ({
+    ...acc,
+    totalBalance: acc.balance + (pnlByAccount[acc.id] ?? 0),
+  }));
+
+  // Grand total in IDR
+  let totalIdr: number | null = rates ? 0 : null;
+  if (rates) {
+    for (const acc of accountsWithTotal) {
+      const idr = toIdr(acc.totalBalance, acc.currency, rates);
+      if (idr === null) { totalIdr = null; break; }
+      totalIdr = (totalIdr ?? 0) + idr;
+    }
+  }
 
   const profitTrend =
     stats.totalNetProfit > 0 ? "positive" : stats.totalNetProfit < 0 ? "negative" : "neutral";
@@ -61,17 +94,6 @@ export default async function DashboardPage() {
 
   const fmtUsd = (v: number) => `$${Math.abs(v).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
-  // Calculate total balance in IDR
-  let totalIdr: number | null = null;
-  if (rates) {
-    totalIdr = 0;
-    for (const acc of accounts) {
-      const idr = toIdr(acc.balance, acc.currency, rates);
-      if (idr !== null) totalIdr += idr;
-      else { totalIdr = null; break; } // unknown currency — can't sum
-    }
-  }
-
   return (
     <div className="space-y-5 max-w-4xl">
       <div>
@@ -82,10 +104,10 @@ export default async function DashboardPage() {
       </div>
 
       {/* Account balances */}
-      {accounts.length > 0 && (
+      {accountsWithTotal.length > 0 && (
         <div className="rounded-xl border border-border overflow-hidden">
           <div className="px-4 py-2.5 border-b border-border bg-secondary/30 flex items-center justify-between gap-4">
-            <span className="text-[12px] font-medium">Saldo Akun</span>
+            <span className="text-[12px] font-medium">Total Saldo Akun</span>
             {rates ? (
               <span className="text-[11px] text-muted-foreground">
                 1 USD = {formatIdr(rates.usdToIdr)} · kurs {rates.date}
@@ -95,36 +117,27 @@ export default async function DashboardPage() {
             )}
           </div>
           <div className="divide-y divide-border">
-            {accounts.map((acc) => {
-              const idr = rates ? toIdr(acc.balance, acc.currency, rates) : null;
-              const balanceStr = acc.currency === "IDR"
-                ? `Rp ${acc.balance.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`
-                : acc.currency === "USC"
-                ? `$${(acc.balance / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                : `$${acc.balance.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            {accountsWithTotal.map((acc) => {
+              const idr = rates ? toIdr(acc.totalBalance, acc.currency, rates) : null;
               return (
                 <div key={acc.id} className="flex items-center justify-between px-4 py-2.5 gap-4">
                   <div className="flex items-center gap-2.5 min-w-0">
                     <span className="text-[13px] font-medium truncate">{acc.name}</span>
-                    <MarketTypePill type={acc.marketType} />
+                    <span className="text-[11px] text-muted-foreground shrink-0">
+                      {MARKET_LABEL[acc.marketType] ?? acc.marketType}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-[13px] font-medium">{balanceStr}</span>
+                  <div className="flex items-center gap-3 shrink-0 text-right">
+                    <span className="text-[13px] font-medium">{fmtBalance(acc.totalBalance, acc.currency)}</span>
                     {idr !== null && acc.currency !== "IDR" && (
-                      <span className="text-[11.5px] text-muted-foreground">{formatIdr(idr)}</span>
+                      <span className="text-[11.5px] text-muted-foreground w-32 text-right">{formatIdr(idr)}</span>
                     )}
                   </div>
                 </div>
               );
             })}
           </div>
-          {totalIdr !== null && accounts.length > 1 && (
-            <div className="px-4 py-2.5 border-t border-border bg-secondary/30 flex items-center justify-between">
-              <span className="text-[12px] font-medium">Total</span>
-              <span className="text-[13px] font-semibold">{formatIdr(totalIdr)}</span>
-            </div>
-          )}
-          {totalIdr !== null && accounts.length === 1 && accounts[0].currency !== "IDR" && (
+          {totalIdr !== null && (accountsWithTotal.length > 1 || accountsWithTotal[0]?.currency !== "IDR") && (
             <div className="px-4 py-2.5 border-t border-border bg-secondary/30 flex items-center justify-between">
               <span className="text-[12px] font-medium">Total (IDR)</span>
               <span className="text-[13px] font-semibold">{formatIdr(totalIdr)}</span>
