@@ -3,10 +3,26 @@ import { ChevronRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, cn } from "@/lib/utils";
-import { getAnalysisQuota, periodLabel, nextResetLabel } from "@/lib/analysis/quota";
+import { getAnalysisQuota, periodLabel, nextResetLabel, PRICE_PER_TOKEN_IDR } from "@/lib/analysis/quota";
 import { GenerateReportButton } from "@/components/analysis/generate-report-button";
+import { PurchaseTokenButton } from "@/components/analysis/purchase-token-dialog";
+import { Badge } from "@/components/ui/badge";
 
 export const maxDuration = 60;
+
+function PurchaseStatusBadge({ status }: { status: "PENDING" | "APPROVED" | "REJECTED" }) {
+  if (status === "APPROVED") {
+    return (
+      <Badge variant="outline" className="border-transparent text-[10.5px]" style={{ backgroundColor: "color-mix(in srgb, var(--color-profit) 15%, transparent)", color: "var(--color-profit)" }}>
+        Disetujui
+      </Badge>
+    );
+  }
+  if (status === "REJECTED") {
+    return <Badge variant="destructive" className="text-[10.5px]">Ditolak</Badge>;
+  }
+  return <Badge variant="secondary" className="text-[10.5px]">Menunggu</Badge>;
+}
 
 function Header() {
   return (
@@ -15,7 +31,7 @@ function Header() {
       <p className="text-[12px] text-muted-foreground mt-0.5">
         Pakai token analisis bulanan untuk meminta AI membuat ringkasan performa trading akun Anda
         — lengkap dengan kekuatan, kelemahan, dan rekomendasi — lalu simpan sebagai catatan yang
-        bisa dibuka kembali kapan saja · 3 token / akun / bulan
+        bisa dibuka kembali kapan saja · 1 token gratis / akun / bulan · tambahan Rp {PRICE_PER_TOKEN_IDR.toLocaleString("id-ID")}/token
       </p>
     </div>
   );
@@ -51,12 +67,18 @@ export default async function AnalisisAiPage({
 
   const selected = accounts.find((a) => a.id === accountId) ?? accounts[0];
 
-  const [quota, reports] = await Promise.all([
+  const [quota, reports, purchases] = await Promise.all([
     getAnalysisQuota(selected.id),
     prisma.tradeAnalysisReport.findMany({
       where: { accountId: selected.id },
       orderBy: { createdAt: "desc" },
       select: { id: true, period: true, headline: true, createdAt: true },
+    }),
+    prisma.tokenPurchase.findMany({
+      where: { accountId: selected.id },
+      orderBy: { createdAt: "desc" },
+      select: { id: true, quantity: true, status: true, createdAt: true },
+      take: 5,
     }),
   ]);
 
@@ -83,17 +105,48 @@ export default async function AnalisisAiPage({
         </div>
       )}
 
-      <div className="rounded-xl border border-border p-4 flex items-center justify-between gap-4 flex-wrap">
-        <div>
-          <p className="text-[13px] font-medium">
-            {quota.remaining} dari {quota.limit} token tersisa bulan ini
-          </p>
-          <p className="text-[11.5px] text-muted-foreground mt-0.5">
-            Menganalisis trading {periodLabel(quota.period)} pada akun &ldquo;{selected.name}&rdquo;
-            {" "}· Reset {nextResetLabel(quota.period)}
-          </p>
+      {/* Kartu quota */}
+      <div className="rounded-xl border border-border p-4 space-y-3">
+        <div className="flex items-start justify-between gap-4 flex-wrap">
+          <div>
+            <p className="text-[13px] font-medium">
+              {quota.freeRemaining} dari {quota.freeLimit} token gratis tersisa bulan ini
+              {quota.purchasedBalance > 0 && (
+                <span className="ml-2 text-[12px] font-normal text-muted-foreground">
+                  · Saldo terbeli: {quota.purchasedBalance} token
+                </span>
+              )}
+            </p>
+            <p className="text-[11.5px] text-muted-foreground mt-0.5">
+              Menganalisis trading {periodLabel(quota.period)} pada akun &ldquo;{selected.name}&rdquo;
+              {" "}· Reset token gratis {nextResetLabel(quota.period)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <PurchaseTokenButton accountId={selected.id} />
+            <GenerateReportButton accountId={selected.id} remaining={quota.remaining} />
+          </div>
         </div>
-        <GenerateReportButton accountId={selected.id} remaining={quota.remaining} />
+
+        {/* Riwayat permintaan pembelian */}
+        {purchases.length > 0 && (
+          <div className="border-t border-border pt-3 space-y-1.5">
+            <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Riwayat pembelian token</p>
+            {purchases.map((p) => (
+              <div key={p.id} className="flex items-center justify-between gap-2">
+                <span className="text-[12px] text-muted-foreground">
+                  {p.quantity} token · {formatDateTime(p.createdAt)}
+                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[12px] text-muted-foreground">
+                    Rp {(p.quantity * PRICE_PER_TOKEN_IDR).toLocaleString("id-ID")}
+                  </span>
+                  <PurchaseStatusBadge status={p.status} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {reports.length === 0 ? (

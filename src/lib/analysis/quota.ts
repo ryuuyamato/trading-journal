@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
-export const MONTHLY_ANALYSIS_LIMIT = 3;
+export const MONTHLY_ANALYSIS_LIMIT = 1;
+export const PRICE_PER_TOKEN_IDR = 10_000;
 
 const WIB_FMT = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Asia/Jakarta" });
 
@@ -38,13 +39,28 @@ export function nextResetLabel(period: string): string {
 
 export interface AnalysisQuota {
   period: string;
-  used: number;
-  remaining: number;
-  limit: number;
+  freeUsed: number;
+  freeRemaining: number;
+  freeLimit: number;
+  purchasedBalance: number;
+  remaining: number; // freeRemaining + purchasedBalance — total token yang bisa dipakai sekarang
 }
 
 export async function getAnalysisQuota(accountId: string): Promise<AnalysisQuota> {
   const period = currentPeriodKey();
-  const used = await prisma.tradeAnalysisReport.count({ where: { accountId, period } });
-  return { period, used, remaining: Math.max(0, MONTHLY_ANALYSIS_LIMIT - used), limit: MONTHLY_ANALYSIS_LIMIT };
+  const [freeUsed, approvedAgg, purchasedUsed] = await Promise.all([
+    prisma.tradeAnalysisReport.count({ where: { accountId, period, tokenSource: "FREE" } }),
+    prisma.tokenPurchase.aggregate({ where: { accountId, status: "APPROVED" }, _sum: { quantity: true } }),
+    prisma.tradeAnalysisReport.count({ where: { accountId, tokenSource: "PURCHASED" } }),
+  ]);
+  const freeRemaining = Math.max(0, MONTHLY_ANALYSIS_LIMIT - freeUsed);
+  const purchasedBalance = Math.max(0, (approvedAgg._sum.quantity ?? 0) - purchasedUsed);
+  return {
+    period,
+    freeUsed,
+    freeRemaining,
+    freeLimit: MONTHLY_ANALYSIS_LIMIT,
+    purchasedBalance,
+    remaining: freeRemaining + purchasedBalance,
+  };
 }

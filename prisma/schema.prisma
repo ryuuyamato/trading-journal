@@ -34,6 +34,7 @@ model User {
   tags            Tag[]
   blogPosts       BlogPost[]
   analysisReports TradeAnalysisReport[]
+  tokenPurchases  TokenPurchase[]
 }
 
 // ─── Blog ────────────────────────────────────────────────────────────────────
@@ -70,10 +71,11 @@ model TradingAccount {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
-  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  trades       Trade[]
-  transactions AccountTransaction[]
+  user            User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  trades          Trade[]
+  transactions    AccountTransaction[]
   analysisReports TradeAnalysisReport[]
+  tokenPurchases  TokenPurchase[]
 }
 
 enum TransactionType {
@@ -209,19 +211,46 @@ model EventAnalysis {
 }
 
 model TradeAnalysisReport {
-  id            String   @id @default(cuid())
+  id            String      @id @default(cuid())
   userId        String
   accountId     String
-  period        String   // "YYYY-MM" (WIB) — bulan yang dianalisis
+  period        String      // "YYYY-MM" (WIB) — bulan yang dianalisis
   headline      String
-  content       Json     // { overview, strengths[], weaknesses[], recommendations[] }
-  statsSnapshot Json     // snapshot angka kunci yang dikirim ke AI
-  createdAt     DateTime @default(now())
+  content       Json        // { overview, strengths[], weaknesses[], recommendations[] }
+  statsSnapshot Json        // snapshot angka kunci yang dikirim ke AI
+  tokenSource   TokenSource @default(FREE)
+  createdAt     DateTime    @default(now())
 
   user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   account TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
   @@index([accountId, period])
+}
+
+enum TokenSource {
+  FREE
+  PURCHASED
+}
+
+enum TokenPurchaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model TokenPurchase {
+  id        String              @id @default(cuid())
+  userId    String
+  accountId String
+  quantity  Int
+  status    TokenPurchaseStatus @default(PENDING)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  account TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId, status])
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────

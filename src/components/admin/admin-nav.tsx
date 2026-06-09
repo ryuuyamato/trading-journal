@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 const NAV = [
   { href: "/admin", label: "Ringkasan" },
   { href: "/admin/users", label: "Pengguna" },
+  { href: "/admin/token-purchases", label: "Pembelian Token" },
   { href: "/admin/blog", label: "Blog" },
 ];
 

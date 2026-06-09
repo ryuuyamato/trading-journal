@@ -70,7 +70,7 @@ function computeMonthlyStats(trades: MonthlyTradeRow[]): TradeReportStats {
   };
 }
 
-export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -82,11 +82,14 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   if (quota.remaining <= 0) {
     return NextResponse.json(
       {
-        error: `Token analisis bulan ini sudah habis (${quota.used}/${quota.limit} terpakai). Akan reset ${nextResetLabel(quota.period)}.`,
+        error: `Token analisis Anda sudah habis (gratis ${quota.freeUsed}/${quota.freeLimit} bulan ini, saldo terbeli 0). Beli token tambahan atau tunggu reset ${nextResetLabel(quota.period)}.`,
       },
       { status: 429 },
     );
   }
+
+  // Pakai token gratis dulu, baru token terbeli
+  const tokenSource: "FREE" | "PURCHASED" = quota.freeRemaining > 0 ? "FREE" : "PURCHASED";
 
   const { start, end } = periodRange(quota.period);
   const trades = await prisma.trade.findMany({
@@ -146,6 +149,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
       headline: result.headline,
       content: result.content as unknown as Prisma.InputJsonValue,
       statsSnapshot: stats as unknown as Prisma.InputJsonValue,
+      tokenSource,
     },
   });
 

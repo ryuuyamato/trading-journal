@@ -2,13 +2,14 @@ import { prisma } from "@/lib/prisma";
 import { StatCard } from "@/components/dashboard/stat-card";
 
 export default async function AdminOverviewPage() {
-  const [totalUsers, pendingUsers, approvedUsers, rejectedUsers, totalPosts, publishedPosts] = await Promise.all([
+  const [totalUsers, pendingUsers, approvedUsers, rejectedUsers, totalPosts, publishedPosts, pendingPurchases] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { status: "PENDING" } }),
     prisma.user.count({ where: { status: "APPROVED" } }),
     prisma.user.count({ where: { status: "REJECTED" } }),
     prisma.blogPost.count(),
     prisma.blogPost.count({ where: { published: true } }),
+    prisma.tokenPurchase.count({ where: { status: "PENDING" } }),
   ]);
 
   return (
@@ -42,6 +43,17 @@ export default async function AdminOverviewPage() {
             Ada <span className="font-medium">{pendingUsers} pengguna</span> menunggu persetujuan akses.{" "}
             <a href="/admin/users" className="text-primary hover:underline">
               Tinjau di halaman Pengguna →
+            </a>
+          </p>
+        </div>
+      )}
+
+      {pendingPurchases > 0 && (
+        <div className="rounded-xl border border-border bg-secondary/30 px-4 py-3">
+          <p className="text-[13px]">
+            Ada <span className="font-medium">{pendingPurchases} permintaan pembelian token</span> menunggu persetujuan.{" "}
+            <a href="/admin/token-purchases" className="text-primary hover:underline">
+              Tinjau di halaman Pembelian Token →
             </a>
           </p>
         </div>
