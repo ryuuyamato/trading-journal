@@ -15,11 +15,7 @@ import { ShoppingCart } from "lucide-react";
 import { toast } from "sonner";
 import { PRICE_PER_TOKEN_IDR } from "@/lib/analysis/constants";
 
-interface Props {
-  accountId: string;
-}
-
-export function PurchaseTokenButton({ accountId }: Props) {
+export function PurchaseTokenButton() {
   const [open, setOpen] = useState(false);
   return (
     <>
@@ -30,18 +26,17 @@ export function PurchaseTokenButton({ accountId }: Props) {
         <ShoppingCart className="h-3.5 w-3.5" />
         Beli Token
       </button>
-      <PurchaseTokenDialog accountId={accountId} open={open} onOpenChange={setOpen} />
+      <PurchaseTokenDialog open={open} onOpenChange={setOpen} />
     </>
   );
 }
 
 interface DialogProps {
-  accountId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function PurchaseTokenDialog({ accountId, open, onOpenChange }: DialogProps) {
+export function PurchaseTokenDialog({ open, onOpenChange }: DialogProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [quantity, setQuantity] = useState(1);
@@ -56,7 +51,7 @@ export function PurchaseTokenDialog({ accountId, open, onOpenChange }: DialogPro
       return;
     }
     startTransition(async () => {
-      const res = await fetch(`/api/accounts/${accountId}/token-purchases`, {
+      const res = await fetch("/api/token-purchases", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ quantity }),
@@ -82,8 +77,8 @@ export function PurchaseTokenDialog({ accountId, open, onOpenChange }: DialogPro
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-1.5">
             <p className="text-[12.5px] text-muted-foreground">
-              Token yang dibeli bersifat permanen dan tidak hangus. Admin akan memproses
-              pembayaran secara manual dan menyetujui permintaan Anda.
+              Token berlaku untuk semua akun trading dan bersifat permanen (tidak hangus).
+              Admin akan memproses pembayaran secara manual sebelum menyetujui permintaan.
             </p>
             <p className="text-[12.5px] text-muted-foreground">
               Harga: <span className="font-medium text-foreground">Rp {PRICE_PER_TOKEN_IDR.toLocaleString("id-ID")} / token</span>

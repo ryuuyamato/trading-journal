@@ -75,7 +75,6 @@ model TradingAccount {
   trades          Trade[]
   transactions    AccountTransaction[]
   analysisReports TradeAnalysisReport[]
-  tokenPurchases  TokenPurchase[]
 }
 
 enum TransactionType {
@@ -224,7 +223,7 @@ model TradeAnalysisReport {
   user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   account TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
 
-  @@index([accountId, period])
+  @@index([userId, period])
 }
 
 enum TokenSource {
@@ -238,19 +237,18 @@ enum TokenPurchaseStatus {
   REJECTED
 }
 
+// Token purchases are per-user (shared wallet across all trading accounts)
 model TokenPurchase {
   id        String              @id @default(cuid())
   userId    String
-  accountId String
   quantity  Int
   status    TokenPurchaseStatus @default(PENDING)
   createdAt DateTime            @default(now())
   updatedAt DateTime            @updatedAt
 
-  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  account TradingAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([accountId, status])
+  @@index([userId, status])
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────
@@ -291,4 +289,3 @@ enum Impact {
   LOW
   HOLIDAY
 }
-

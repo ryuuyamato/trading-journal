@@ -42,7 +42,6 @@ function computeMonthlyStats(trades: MonthlyTradeRow[]): TradeReportStats {
   const longWins = longTrades.filter((t) => pnl(t) > 0).length;
   const shortWins = shortTrades.filter((t) => pnl(t) > 0).length;
 
-  // `trades` is in chronological (ascending) order — walk it forward for streaks
   let runningStreak = 0;
   let runningType: "win" | "loss" | null = null;
   let longestWinStreak = 0;
@@ -78,7 +77,8 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
   const account = await prisma.tradingAccount.findFirst({ where: { id: accountId, userId: session.user.id } });
   if (!account) return NextResponse.json({ error: "Akun tidak ditemukan" }, { status: 404 });
 
-  const quota = await getAnalysisQuota(accountId);
+  // Quota is per-user (shared across all accounts)
+  const quota = await getAnalysisQuota(session.user.id);
   if (quota.remaining <= 0) {
     return NextResponse.json(
       {
@@ -88,7 +88,6 @@ export async function POST(_req: Request, { params }: { params: Promise<{ id: st
     );
   }
 
-  // Pakai token gratis dulu, baru token terbeli
   const tokenSource: "FREE" | "PURCHASED" = quota.freeRemaining > 0 ? "FREE" : "PURCHASED";
 
   const { start, end } = periodRange(quota.period);

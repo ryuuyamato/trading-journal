@@ -18,23 +18,8 @@ function PurchaseStatusBadge({ status }: { status: "PENDING" | "APPROVED" | "REJ
       </Badge>
     );
   }
-  if (status === "REJECTED") {
-    return <Badge variant="destructive" className="text-[10.5px]">Ditolak</Badge>;
-  }
+  if (status === "REJECTED") return <Badge variant="destructive" className="text-[10.5px]">Ditolak</Badge>;
   return <Badge variant="secondary" className="text-[10.5px]">Menunggu</Badge>;
-}
-
-function Header() {
-  return (
-    <div>
-      <h1 className="text-[20px] font-medium">Analisis AI</h1>
-      <p className="text-[12px] text-muted-foreground mt-0.5">
-        Pakai token analisis bulanan untuk meminta AI membuat ringkasan performa trading akun Anda
-        — lengkap dengan kekuatan, kelemahan, dan rekomendasi — lalu simpan sebagai catatan yang
-        bisa dibuka kembali kapan saja · 1 token gratis / akun / bulan · tambahan Rp {PRICE_PER_TOKEN_IDR.toLocaleString("id-ID")}/token
-      </p>
-    </div>
-  );
 }
 
 export default async function AnalisisAiPage({
@@ -55,7 +40,9 @@ export default async function AnalisisAiPage({
   if (accounts.length === 0) {
     return (
       <div className="max-w-3xl space-y-4">
-        <Header />
+        <div>
+          <h1 className="text-[20px] font-medium">Analisis AI</h1>
+        </div>
         <div className="py-16 text-center text-[13px] text-muted-foreground border border-border rounded-xl">
           Anda belum memiliki akun trading. Buat akun terlebih dahulu di halaman{" "}
           <Link href="/accounts" className="underline underline-offset-2">Akun</Link>{" "}
@@ -68,14 +55,14 @@ export default async function AnalisisAiPage({
   const selected = accounts.find((a) => a.id === accountId) ?? accounts[0];
 
   const [quota, reports, purchases] = await Promise.all([
-    getAnalysisQuota(selected.id),
+    getAnalysisQuota(userId),
     prisma.tradeAnalysisReport.findMany({
       where: { accountId: selected.id },
       orderBy: { createdAt: "desc" },
       select: { id: true, period: true, headline: true, createdAt: true },
     }),
     prisma.tokenPurchase.findMany({
-      where: { accountId: selected.id },
+      where: { userId },
       orderBy: { createdAt: "desc" },
       select: { id: true, quantity: true, status: true, createdAt: true },
       take: 5,
@@ -84,7 +71,13 @@ export default async function AnalisisAiPage({
 
   return (
     <div className="max-w-3xl space-y-4">
-      <Header />
+      <div>
+        <h1 className="text-[20px] font-medium">Analisis AI</h1>
+        <p className="text-[12px] text-muted-foreground mt-0.5">
+          Minta AI membuat ringkasan performa trading — kekuatan, kelemahan, dan rekomendasi —
+          tersimpan sebagai catatan permanen · <span className="font-medium">{quota.freeLimit} token gratis / bulan</span> untuk semua akun · tambahan Rp {PRICE_PER_TOKEN_IDR.toLocaleString("id-ID")}/token
+        </p>
+      </div>
 
       {accounts.length > 1 && (
         <div className="flex flex-wrap gap-1.5">
@@ -105,7 +98,7 @@ export default async function AnalisisAiPage({
         </div>
       )}
 
-      {/* Kartu quota */}
+      {/* Quota card — per-user */}
       <div className="rounded-xl border border-border p-4 space-y-3">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -118,17 +111,15 @@ export default async function AnalisisAiPage({
               )}
             </p>
             <p className="text-[11.5px] text-muted-foreground mt-0.5">
-              Menganalisis trading {periodLabel(quota.period)} pada akun &ldquo;{selected.name}&rdquo;
-              {" "}· Reset token gratis {nextResetLabel(quota.period)}
+              Token berlaku untuk semua akun · Reset {nextResetLabel(quota.period)}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <PurchaseTokenButton accountId={selected.id} />
+            <PurchaseTokenButton />
             <GenerateReportButton accountId={selected.id} remaining={quota.remaining} />
           </div>
         </div>
 
-        {/* Riwayat permintaan pembelian */}
         {purchases.length > 0 && (
           <div className="border-t border-border pt-3 space-y-1.5">
             <p className="text-[11px] text-muted-foreground font-medium uppercase tracking-wide">Riwayat pembelian token</p>
@@ -149,29 +140,34 @@ export default async function AnalisisAiPage({
         )}
       </div>
 
-      {reports.length === 0 ? (
-        <div className="py-16 text-center text-[13px] text-muted-foreground border border-border rounded-xl">
-          Belum ada laporan analisis untuk akun ini. Klik &ldquo;Buat Analisis Baru&rdquo; untuk memulai.
-        </div>
-      ) : (
-        <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
-          {reports.map((r) => (
-            <Link
-              key={r.id}
-              href={`/analisis-ai/${r.id}`}
-              className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-secondary/40 transition-colors"
-            >
-              <div className="min-w-0">
-                <p className="text-[13px] font-medium truncate">{r.headline}</p>
-                <p className="text-[11.5px] text-muted-foreground mt-0.5">
-                  {periodLabel(r.period)} · dibuat {formatDateTime(r.createdAt)}
-                </p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
-            </Link>
-          ))}
-        </div>
-      )}
+      <div>
+        <p className="text-[12px] text-muted-foreground mb-2">
+          Laporan analisis untuk akun <span className="font-medium text-foreground">{selected.name}</span>
+        </p>
+        {reports.length === 0 ? (
+          <div className="py-16 text-center text-[13px] text-muted-foreground border border-border rounded-xl">
+            Belum ada laporan analisis untuk akun ini. Klik &ldquo;Buat Analisis Baru&rdquo; untuk memulai.
+          </div>
+        ) : (
+          <div className="rounded-xl border border-border overflow-hidden divide-y divide-border">
+            {reports.map((r) => (
+              <Link
+                key={r.id}
+                href={`/analisis-ai/${r.id}`}
+                className="flex items-center justify-between gap-3 px-4 py-3 hover:bg-secondary/40 transition-colors"
+              >
+                <div className="min-w-0">
+                  <p className="text-[13px] font-medium truncate">{r.headline}</p>
+                  <p className="text-[11.5px] text-muted-foreground mt-0.5">
+                    {periodLabel(r.period)} · dibuat {formatDateTime(r.createdAt)}
+                  </p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
