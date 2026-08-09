@@ -7,8 +7,9 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-space-grotesk);
+  --font-mono: var(--font-jetbrains-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -25,6 +26,7 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
   --color-destructive: var(--destructive);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
@@ -34,103 +36,122 @@
   --color-secondary: var(--secondary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
+  --color-primary-deep: var(--primary-deep);
   --color-popover-foreground: var(--popover-foreground);
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-foreground-2: var(--foreground-2);
   --color-profit: var(--profit);
   --color-loss: var(--loss);
   --color-brand: var(--brand);
   --color-brand-ink: var(--brand-ink);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  --color-info: var(--info);
+  --color-warning: var(--warning);
+  /* Kandel radius scale, verbatim from the brand kit: chips 6, controls 10,
+     panels 16. Deliberately not derived from a single --radius — the kit
+     specifies three independent steps. */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Exchange Light — same roles as dark, tuned for a bright ground.
-   Profit/loss are darkened so they still clear contrast on white.
+   KANDEL — light theme.
+   Values from kandel-brand/code/kandel-tokens.css [data-theme="light"].
+   Yellow steps down to #F0B90B here so it survives a white ground.
    ══════════════════════════════════════════════════════════════ */
 :root {
-  --background: #FAFAFA;
-  --foreground: #1E2329;
-  --card: #FFFFFF;
-  --card-foreground: #1E2329;
-  --popover: #FFFFFF;
-  --popover-foreground: #1E2329;
-  --primary: #FCD535;
-  --primary-foreground: #1E2329;
+  --background: #FFFFFF;
+  --foreground: #0B0E11;
+  --foreground-2: #474D57;
+  --card: #FAFAFA;
+  --card-foreground: #0B0E11;
+  --popover: #FAFAFA;
+  --popover-foreground: #0B0E11;
+  --primary: #F0B90B;
+  --primary-deep: #D9A400;
+  --primary-foreground: #0B0E11;
   --secondary: #F5F5F5;
-  --secondary-foreground: #1E2329;
+  --secondary-foreground: #0B0E11;
   --muted: #F5F5F5;
   --muted-foreground: #707A8A;
-  --accent: #EAECEF;
-  --accent-foreground: #1E2329;
-  --destructive: #D9304E;
-  --border: #EAECEF;
-  --input: #EAECEF;
-  --ring: #C99400;
-  --brand: #FCD535;
-  /* Brand as *text*: raw #FCD535 is unreadable on white, so the light theme
-     substitutes a darkened gold. Fills keep using --brand. */
+  --accent: #EEF0F2;
+  --accent-foreground: #0B0E11;
+  --destructive: #D9304A;
+  --border: #E6E8EA;
+  --border-strong: #CFD6DD;
+  --input: #E6E8EA;
+  --ring: #F0B90B;
+  --brand: #F0B90B;
+  /* Not in the kit: the kit has no gold intended for *text*. Even the stepped-
+     down #F0B90B only reaches ~2:1 on white, so links and labels use a darker
+     gold. Fills and borders keep --brand. */
   --brand-ink: #8A6900;
-  --profit: #01A46D;
-  --loss: #D9304E;
-  --chart-1: #C99400;
-  --chart-2: #01A46D;
-  --chart-3: #D9304E;
+  --profit: #02A17A;
+  --loss: #D9304A;
+  --info: #2B6DEF;
+  --warning: #D9A400;
+  --chart-1: #D9A400;
+  --chart-2: #02A17A;
+  --chart-3: #D9304A;
   --chart-4: #2B6DEF;
   --chart-5: #7C5CE0;
-  --radius: 0.25rem;
-  --sidebar: #FFFFFF;
-  --sidebar-foreground: #1E2329;
-  --sidebar-primary: #FCD535;
-  --sidebar-primary-foreground: #1E2329;
-  --sidebar-accent: #EAECEF;
-  --sidebar-accent-foreground: #1E2329;
-  --sidebar-border: #EAECEF;
-  --sidebar-ring: #C99400;
+  --sidebar: #FAFAFA;
+  --sidebar-foreground: #0B0E11;
+  --sidebar-primary: #F0B90B;
+  --sidebar-primary-foreground: #0B0E11;
+  --sidebar-accent: #EEF0F2;
+  --sidebar-accent-foreground: #0B0E11;
+  --sidebar-border: #E6E8EA;
+  --sidebar-ring: #F0B90B;
 }
 
 /* ══════════════════════════════════════════════════════════════
-   Exchange Dark (default) — layered near-black surfaces.
-   Yellow = action/active. Green/red are reserved for P&L only,
-   so a coloured number never reads as a button.
+   KANDEL — dark theme (default), the kit's primary surface set.
+   Yellow = action and identity only. Long/short green and red are
+   reserved for P&L and position direction; system states use info
+   and warning instead.
    ══════════════════════════════════════════════════════════════ */
 .dark {
   --background: #0B0E11;
   --foreground: #EAECEF;
+  --foreground-2: #B7BDC6;
   --card: #181A20;
   --card-foreground: #EAECEF;
-  --popover: #181A20;
+  --popover: #1E2329;
   --popover-foreground: #EAECEF;
   --primary: #FCD535;
+  --primary-deep: #F0B90B;
   --primary-foreground: #0B0E11;
   --secondary: #1E2329;
   --secondary-foreground: #EAECEF;
   --muted: #1E2329;
   --muted-foreground: #848E9C;
-  --accent: #2B3139;
+  --accent: #252930;
   --accent-foreground: #EAECEF;
   --destructive: #F6465D;
   --border: #2B3139;
+  --border-strong: #3C424B;
   --input: #2B3139;
   --ring: #FCD535;
   --brand: #FCD535;
   --brand-ink: #FCD535;
   --profit: #0ECB81;
   --loss: #F6465D;
+  --info: #4A90E2;
+  --warning: #F0B90B;
   --chart-1: #FCD535;
   --chart-2: #0ECB81;
   --chart-3: #F6465D;
-  --chart-4: #4A7DFF;
+  --chart-4: #4A90E2;
   --chart-5: #A78BFA;
-  --sidebar: #0B0E11;
+  --sidebar: #181A20;
   --sidebar-foreground: #EAECEF;
   --sidebar-primary: #FCD535;
   --sidebar-primary-foreground: #0B0E11;
-  --sidebar-accent: #2B3139;
+  --sidebar-accent: #252930;
   --sidebar-accent-foreground: #EAECEF;
   --sidebar-border: #2B3139;
   --sidebar-ring: #FCD535;
@@ -147,6 +168,12 @@
   html {
     @apply font-sans;
   }
+  /* Space Grotesk carries the headings, per the kit's type hierarchy. */
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
   /* Digits share one advance width everywhere, so figures stacked in a
      column line up on the decimal without per-cell alignment hacks. */
   table,
@@ -155,8 +182,8 @@
   }
 }
 
-/* Monospaced, tabular figures — the terminal texture for any price,
-   size or P&L. Pair with text-profit / text-loss for direction. */
+/* JetBrains Mono + tabular figures — the kit's rule for prices, lots, R and
+   percentages. Pair with text-profit / text-loss for direction. */
 @utility num {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -187,5 +214,15 @@
   ::selection {
     background-color: color-mix(in oklch, var(--brand) 30%, transparent);
     color: var(--foreground);
+  }
+  /* The kit ships this; honouring it costs nothing and the rail/drawer both
+     animate. */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
   }
 }

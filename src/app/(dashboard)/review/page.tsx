@@ -1,4 +1,4 @@
-﻿export default function ReviewPage() {
+export default function ReviewPage() {
   return (
     <div>
       <h1 className="text-[17px] font-semibold tracking-tight">Review</h1>

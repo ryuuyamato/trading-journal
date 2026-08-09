@@ -1,4 +1,4 @@
-﻿import { CalendarSkeleton } from "@/components/calendar/CalendarSkeleton";
+import { CalendarSkeleton } from "@/components/calendar/CalendarSkeleton";
 
 export default function CalendarLoading() {
   return (
@@ -6,7 +6,7 @@ export default function CalendarLoading() {
       <div>
         <h1 className="text-[17px] font-semibold tracking-tight">Kalender Ekonomi</h1>
         <p className="text-[12px] text-muted-foreground mt-0.5">
-          Event ekonomi minggu ini &amp; minggu depan Â· diperbarui otomatis tiap jam
+          Event ekonomi minggu ini &amp; minggu depan · diperbarui otomatis tiap jam
         </p>
       </div>
       <CalendarSkeleton />

@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
@@ -14,8 +14,8 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <div className="max-w-4xl mx-auto px-4 py-6 md:px-8 space-y-5">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <ShieldCheck className="h-5 w-5 text-primary" />
+            <div className="rounded-md bg-secondary p-2">
+              <ShieldCheck className="size-5 text-primary" />
             </div>
             <div>
               <h1 className="text-[17px] font-semibold tracking-tight">Admin Panel</h1>

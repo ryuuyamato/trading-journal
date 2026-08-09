@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
+import { KandelMark } from "@/components/brand/kandel-mark";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,12 +42,12 @@ export default function LoginPage() {
     <Card>
       <CardHeader className="space-y-2 text-center">
         <div className="flex justify-center">
-          <div className="flex size-10 items-center justify-center rounded-lg bg-primary">
-            <TrendingUp className="size-5 text-primary-foreground" />
-          </div>
+          <KandelMark className="h-9 w-auto" />
         </div>
-        <CardTitle className="text-lg tracking-tight">Trading Journal</CardTitle>
-        <CardDescription className="text-[12.5px]">Masuk ke akun Anda</CardDescription>
+        <CardTitle className="font-display text-lg tracking-tight">Kandel</CardTitle>
+        <CardDescription className="text-[12.5px]">
+          Catat setiap entry, exit, dan alasan di baliknya.
+        </CardDescription>
       </CardHeader>
 
       <form onSubmit={handleSubmit}>

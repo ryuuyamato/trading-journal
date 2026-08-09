@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
+import { KandelLockup, KandelMark } from "@/components/brand/kandel-mark";
 import { TradeFormDialog } from "@/components/trades/trade-form-dialog";
 import { marketDotColor, marketLabel } from "@/lib/market-colors";
 import { cn, formatAccountAmount, formatSignedUsd } from "@/lib/utils";
@@ -58,14 +59,11 @@ export function AppTopBar({
 
   return (
     <header className="fixed inset-x-0 top-0 z-40 flex h-12 items-center gap-2 border-b border-border bg-sidebar px-3">
-      {/* Brand */}
-      <Link href="/dashboard" className="flex shrink-0 items-center gap-2">
-        <span className="flex size-6 items-center justify-center rounded bg-primary text-[13px] font-bold text-primary-foreground">
-          T
-        </span>
-        <span className="hidden text-[13px] font-semibold tracking-tight sm:block">
-          TradeJournal
-        </span>
+      {/* Brand — mark alone below sm, full lockup above it, per the kit's
+          minimum-width rule for the lockup. */}
+      <Link href="/dashboard" className="flex shrink-0 items-center">
+        <KandelMark className="h-6 w-auto sm:hidden" />
+        <KandelLockup className="hidden text-[15px] sm:flex" />
       </Link>
 
       <span className="mx-1 hidden h-5 w-px bg-border sm:block" />

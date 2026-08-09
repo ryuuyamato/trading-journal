@@ -1,4 +1,4 @@
-﻿export default function JournalPage() {
+export default function JournalPage() {
   return (
     <div className="space-y-4">
       <div>
