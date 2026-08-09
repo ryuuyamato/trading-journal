@@ -7,7 +7,6 @@ import {
   PRIMARY_NAV,
   SECONDARY_NAV,
   ADMIN_NAV,
-  MOBILE_NAV,
   isNavActive,
   type NavItem,
 } from "@/components/layout/nav-items";
@@ -48,7 +47,8 @@ export function AppRail({ isAdmin }: { isAdmin?: boolean }) {
 
   return (
     <>
-      {/* ── Desktop rail ─────────────────────────────────────────────────
+      {/* Desktop rail only — the phone gets MobileTabBar instead, since a
+          hover-to-expand affordance is meaningless on touch.
           Collapsed to 56px, overlays content when it expands so the page
           beside it never reflows. */}
       <aside
@@ -78,36 +78,6 @@ export function AppRail({ isAdmin }: { isAdmin?: boolean }) {
         </nav>
       </aside>
 
-      {/* ── Mobile bottom bar ────────────────────────────────────────────
-          A hover-expanding rail is meaningless on touch, so the phone gets a
-          fixed five-slot tab bar instead. */}
-      <nav className="fixed inset-x-0 bottom-0 z-30 flex h-14 items-stretch border-t border-sidebar-border bg-sidebar md:hidden">
-        {MOBILE_NAV.map((item) => {
-          const active = isNavActive(pathname, item.href);
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "relative flex flex-1 flex-col items-center justify-center gap-1 transition-colors",
-                active ? "text-primary" : "text-muted-foreground"
-              )}
-            >
-              <span
-                className={cn(
-                  "absolute top-0 h-0.5 w-8 rounded-b bg-primary transition-opacity",
-                  active ? "opacity-100" : "opacity-0"
-                )}
-              />
-              <Icon className="size-[18px]" />
-              <span className="max-w-full truncate px-1 text-[10px] leading-none">
-                {item.label}
-              </span>
-            </Link>
-          );
-        })}
-      </nav>
     </>
   );
 }

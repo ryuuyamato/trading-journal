@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { AccountFormDialog } from "@/components/accounts/account-form-dialog";
@@ -41,7 +42,60 @@ export default async function AccountsPage() {
           Belum ada akun. Klik &ldquo;Akun Baru&rdquo; untuk membuat akun pertama.
         </div>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <>
+        {/* Phone: wallet cards. The table below needs 480px to show its six
+            columns, which would force sideways scrolling on a handset. */}
+        <ul className="space-y-2 md:hidden">
+          {accounts.map((acc) => {
+            const netProfit = profitMap.get(acc.id) ?? 0;
+            return (
+              <li key={acc.id}>
+                <Link
+                  href={`/accounts/${acc.id}`}
+                  className="block rounded-lg border border-border bg-card p-3 transition-colors active:bg-accent/50"
+                >
+                  <div className="flex items-center gap-2">
+                    <span
+                      className="size-2 shrink-0 rounded-full"
+                      style={{ backgroundColor: marketDotColor(acc.marketType) }}
+                    />
+                    <span className="min-w-0 flex-1 truncate text-[14px] font-medium">
+                      {acc.name}
+                    </span>
+                    <PropertyPill marketType={acc.marketType} />
+                  </div>
+
+                  <p
+                    className={cn(
+                      "num mt-2.5 text-[20px] leading-none font-semibold",
+                      netProfit > 0
+                        ? "text-profit"
+                        : netProfit < 0
+                        ? "text-loss"
+                        : "text-foreground"
+                    )}
+                  >
+                    {formatAmount(acc.currency, acc.balance + netProfit)}
+                  </p>
+
+                  <div className="mt-2.5 flex items-center justify-between border-t border-border pt-2.5 text-[11.5px] text-muted-foreground">
+                    <span>
+                      Modal{" "}
+                      <span className="num">
+                        {acc.currency === "USC"
+                          ? formatCentWithUsd(acc.balance, "")
+                          : `${acc.currency} ${acc.balance.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`}
+                      </span>
+                    </span>
+                    <span className="num">{acc._count.trades} trade</span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="hidden overflow-hidden rounded-lg border border-border bg-card md:block">
           <div className="overflow-x-auto">
           <table className="w-full min-w-120 border-collapse">
             <thead>
@@ -123,6 +177,7 @@ export default async function AccountsPage() {
           </table>
           </div>
         </div>
+        </>
       )}
     </div>
   );

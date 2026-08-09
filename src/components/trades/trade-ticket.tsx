@@ -267,12 +267,17 @@ export function TradeTicket({
         </SheetTrigger>
       )}
 
-      <SheetContent side="right" className="w-full gap-0 p-0 sm:max-w-lg">
+      {/* Bottom sheet on a phone, right-hand drawer from md up. */}
+      <SheetContent side="responsive" className="gap-0 p-0 md:sm:max-w-lg">
         <form
           onSubmit={handleSubmit}
           onInput={(e) => recomputeSummary(e.currentTarget)}
           className="flex h-full min-h-0 flex-col"
         >
+          {/* Drag affordance — reads as a sheet you can pull down, and only
+              makes sense in the bottom position. */}
+          <div className="mx-auto mt-2 h-1 w-9 shrink-0 rounded-full bg-border md:hidden" />
+
           <SheetHeader className="shrink-0 border-b border-border px-4 py-3">
             <SheetTitle className="text-[13px] font-semibold tracking-wide uppercase">
               {mode === "edit" ? "Edit Trade" : "Catat Trade"}
@@ -529,16 +534,19 @@ export function TradeTicket({
               </div>
             </div>
 
-            <div className="flex gap-2 border-t border-border px-4 py-3">
+            {/* Bottom padding clears the home indicator — the sheet's lower
+                edge sits on the screen edge on a phone. Taller buttons on
+                touch: the 32px default is below the 44px target minimum. */}
+            <div className="flex gap-2 border-t border-border px-4 py-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:pb-3">
               <Button
                 type="button"
                 variant="secondary"
-                className="flex-1"
+                className="h-11 flex-1 md:h-8"
                 onClick={() => setOpen(false)}
               >
                 Batal
               </Button>
-              <Button type="submit" disabled={isPending} className="flex-[2]">
+              <Button type="submit" disabled={isPending} className="h-11 flex-2 md:h-8">
                 {isPending
                   ? "Menyimpan..."
                   : mode === "edit"

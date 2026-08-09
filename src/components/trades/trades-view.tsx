@@ -7,6 +7,7 @@ import { TradesTable } from "@/components/trades/views/trades-table";
 import { TradesBoard } from "@/components/trades/views/trades-board";
 import { TradesCalendar } from "@/components/trades/views/trades-calendar";
 import { TradesGallery } from "@/components/trades/views/trades-gallery";
+import { TradesListMobile } from "@/components/trades/views/trades-list-mobile";
 import type { AccountOption, TradeListItem } from "@/components/trades/types";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +31,10 @@ export function TradesView({ accounts, trades }: { accounts: AccountOption[]; tr
 
   return (
     <div className="space-y-3">
-      {/* View switcher + actions */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      {/* View switcher + actions — desktop only. On a phone the card list is
+          the single view, and recording a trade lives on the tab bar's centre
+          button, so this whole strip would be dead weight. */}
+      <div className="hidden flex-wrap items-center justify-between gap-2 md:flex">
         {/* Segmented control: the whole set of views stays visible, and the
             active one is a raised chip rather than an underline. */}
         <div className="flex items-center gap-0.5 rounded-md bg-secondary p-[3px]">
@@ -72,10 +75,17 @@ export function TradesView({ accounts, trades }: { accounts: AccountOption[]; tr
         </div>
       </div>
 
-      {view === "table" && <TradesTable trades={sorted} accounts={accounts} />}
-      {view === "board" && <TradesBoard trades={sorted} />}
-      {view === "calendar" && <TradesCalendar trades={sorted} />}
-      {view === "gallery" && <TradesGallery trades={sorted} />}
+      {/* Phone: always the card list. */}
+      <div className="md:hidden">
+        <TradesListMobile trades={sorted} accounts={accounts} />
+      </div>
+
+      <div className="hidden md:block">
+        {view === "table" && <TradesTable trades={sorted} accounts={accounts} />}
+        {view === "board" && <TradesBoard trades={sorted} />}
+        {view === "calendar" && <TradesCalendar trades={sorted} />}
+        {view === "gallery" && <TradesGallery trades={sorted} />}
+      </div>
     </div>
   );
 }

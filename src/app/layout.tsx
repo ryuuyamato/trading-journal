@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
+import { ServiceWorkerRegister } from "@/components/pwa/service-worker-register";
 import "./globals.css";
 
 // Kandel's type hierarchy: Space Grotesk for display, Inter for UI, JetBrains
@@ -23,6 +24,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: "#0B0E11",
+  // Required for env(safe-area-inset-*) to report anything but 0 — the phone
+  // tab bar and header rely on it to clear the notch and home indicator.
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -36,6 +40,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="tj-theme">
           {children}
           <Toaster richColors position="top-right" />
+          <ServiceWorkerRegister />
         </ThemeProvider>
       </body>
     </html>

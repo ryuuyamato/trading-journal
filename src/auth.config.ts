@@ -13,8 +13,11 @@ export const authConfig: NextAuthConfig = {
       const isAuthPage = pathname === "/login" || pathname === "/register";
       const isApiAuth  = pathname.startsWith("/api/auth");
       const isPendingPage = pathname === "/pending";
+      // Cached by the service worker and rendered when the network is gone, so
+      // it must resolve without a session. Contains no user data.
+      const isOfflinePage = pathname === "/offline";
 
-      if (isApiAuth) return true;
+      if (isApiAuth || isOfflinePage) return true;
 
       if (isAuthPage) {
         if (isLoggedIn) return Response.redirect(new URL("/dashboard", nextUrl));
