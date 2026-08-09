@@ -2,6 +2,7 @@
 
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { IMPACT_DOT } from "@/lib/calendar/impact-colors";
 
 const CURRENCIES = ["USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY"];
 const IMPACTS = ["HIGH", "MEDIUM", "LOW", "HOLIDAY"];
@@ -128,12 +129,7 @@ export function CalendarFilters({ defaultFrom, defaultTo }: CalendarFiltersProps
   );
 }
 
-const IMPACT_DOT_CLASS: Record<string, string> = {
-  HIGH: "bg-red-500",
-  MEDIUM: "bg-amber-400",
-  LOW: "bg-green-500",
-  HOLIDAY: "bg-blue-400",
-};
+const IMPACT_DOT_CLASS = IMPACT_DOT;
 
 const IMPACT_LABEL: Record<string, string> = {
   HIGH: "Tinggi",

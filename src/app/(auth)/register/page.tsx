@@ -59,15 +59,17 @@ export default function RegisterPage() {
   }
 
   return (
-    <Card className="shadow-lg">
-      <CardHeader className="text-center space-y-2">
+    <Card>
+      <CardHeader className="space-y-2 text-center">
         <div className="flex justify-center">
-          <div className="p-2 rounded-lg bg-primary/10">
-            <TrendingUp className="h-6 w-6 text-primary" />
+          <div className="flex size-10 items-center justify-center rounded-lg bg-primary">
+            <TrendingUp className="size-5 text-primary-foreground" />
           </div>
         </div>
-        <CardTitle className="text-xl">Buat Akun</CardTitle>
-        <CardDescription>Mulai lacak perjalanan trading Anda</CardDescription>
+        <CardTitle className="text-lg tracking-tight">Buat Akun</CardTitle>
+        <CardDescription className="text-[12.5px]">
+          Mulai lacak perjalanan trading Anda
+        </CardDescription>
       </CardHeader>
 
       <form onSubmit={handleSubmit}>
@@ -129,9 +131,9 @@ export default function RegisterPage() {
           <Button type="submit" className="w-full" disabled={isPending}>
             {isPending ? "Mendaftar..." : "Daftar"}
           </Button>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-center text-[12.5px] text-muted-foreground">
             Sudah punya akun?{" "}
-            <Link href="/login" className="text-primary hover:underline font-medium">
+            <Link href="/login" className="font-medium text-brand-ink hover:underline">
               Masuk
             </Link>
           </p>

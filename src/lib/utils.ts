@@ -21,6 +21,24 @@ export function formatCentWithUsd(absValue: number, sign: string) {
   return `${sign}¢${fmt(absValue)} (≈ ${sign}$${fmt(absValue / 100)})`;
 }
 
+// Balance/P&L in an account's own units. Kept separate from formatCurrency
+// because "USC" (cent accounts) is not an ISO currency code and would make
+// Intl.NumberFormat throw.
+export function formatAccountAmount(amount: number, currency: string): string {
+  if (currency === "IDR") return `Rp ${Math.round(amount).toLocaleString("id-ID")}`;
+  if (currency === "USC") {
+    const usd = amount / 100;
+    return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  }
+  return `${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+}
+
+// Signed P&L for headline readouts — always carries an explicit + or −.
+export function formatSignedUsd(amount: number): string {
+  const sign = amount >= 0 ? "+" : "−";
+  return `${sign}$${Math.abs(amount).toLocaleString("en-US", { maximumFractionDigits: 2 })}`;
+}
+
 export function formatCurrency(amount: number, currency = "USD") {
   return new Intl.NumberFormat("id-ID", {
     style: "currency",

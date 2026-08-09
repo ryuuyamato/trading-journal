@@ -7,7 +7,7 @@ import { Plus } from "lucide-react";
 import { TradeFormDialog } from "@/components/trades/trade-form-dialog";
 import { useState } from "react";
 import type { AccountOption, TradeListItem } from "@/components/trades/types";
-import { formatCentWithUsd } from "@/lib/utils";
+import { cn, formatCentWithUsd } from "@/lib/utils";
 
 function formatPnl(v: number | null, currency = "USD") {
   if (v === null) return "–";
@@ -39,36 +39,27 @@ export function TradesTable({ trades, accounts }: { trades: TradeListItem[]; acc
   const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   return (
-    <div className="w-full overflow-x-auto">
-      <table className="w-full border-collapse min-w-160">
+    <div className="w-full overflow-x-auto rounded-lg border border-border">
+      <table className="w-full min-w-160 border-collapse">
         <thead>
-          <tr className="border-b border-border">
-            <th className="text-left py-2 px-3 text-[11px] text-muted-foreground font-medium w-48">
-              <span className="flex items-center gap-1">
-                <span className="opacity-60">Abc</span> Instrumen
-              </span>
+          {/* Header sits one tone above the rows, like an exchange order book. */}
+          <tr className="border-b border-border bg-secondary/50">
+            <th className="w-48 px-3 py-2 text-left text-[10.5px] font-medium tracking-wider text-muted-foreground uppercase">
+              Instrumen
             </th>
-            <th className="text-left py-2 px-3 text-[11px] text-muted-foreground font-medium w-28">
-              <span className="flex items-center gap-1">
-                <span className="opacity-60">◈</span> Aset
-              </span>
+            <th className="w-28 px-3 py-2 text-left text-[10.5px] font-medium tracking-wider text-muted-foreground uppercase">
+              Aset
             </th>
-            <th className="text-left py-2 px-3 text-[11px] text-muted-foreground font-medium w-28">
-              <span className="flex items-center gap-1">
-                <span className="opacity-60">⊞</span> Mode
-              </span>
+            <th className="w-28 px-3 py-2 text-left text-[10.5px] font-medium tracking-wider text-muted-foreground uppercase">
+              Mode
             </th>
-            <th className="text-left py-2 px-3 text-[11px] text-muted-foreground font-medium w-24">
-              <span className="flex items-center gap-1">
-                <span className="opacity-60">⚑</span> Hasil
-              </span>
+            <th className="w-24 px-3 py-2 text-left text-[10.5px] font-medium tracking-wider text-muted-foreground uppercase">
+              Hasil
             </th>
-            <th className="text-right py-2 px-3 text-[11px] text-muted-foreground font-medium w-28">
-              <span className="flex items-center justify-end gap-1">
-                <span className="opacity-60">$</span> P&amp;L
-              </span>
+            <th className="w-28 px-3 py-2 text-right text-[10.5px] font-medium tracking-wider text-muted-foreground uppercase">
+              P&amp;L
             </th>
-            <th className="text-right py-2 px-3 text-[11px] text-muted-foreground font-medium w-16">
+            <th className="w-16 px-3 py-2 text-right text-[10.5px] font-medium tracking-wider text-muted-foreground uppercase">
               R
             </th>
             <th className="w-10" />
@@ -92,39 +83,41 @@ export function TradesTable({ trades, accounts }: { trades: TradeListItem[]; acc
               <tr
                 key={trade.id}
                 onClick={() => router.push(`/trades/${trade.id}`)}
-                className="border-b border-border hover:bg-secondary/50 transition-colors group cursor-pointer"
+                className="group cursor-pointer border-b border-border transition-colors last:border-b-0 hover:bg-accent/40"
               >
-                {/* Instrumen */}
-                <td className="py-2 px-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-muted-foreground opacity-60">📄</span>
-                    <div>
-                      <div className="flex items-center gap-1.5">
-                        <span className="text-[13px] font-medium">{trade.symbol}</span>
-                        <PropertyPill
-                          variant={trade.direction === "LONG" ? "profit" : "loss"}
-                          label={directionLabel(trade.direction, marketType)}
-                        />
-                      </div>
-                      <p className="text-[11px] text-muted-foreground leading-none mt-0.5">
-                        {formatDateRange(trade.openTime, trade.closeTime)}
-                      </p>
-                    </div>
+                {/* Instrumen — a direction stripe on the row edge makes long/short
+                    scannable down the column without reading each pill. */}
+                <td className="relative px-3 py-1.5">
+                  <span
+                    className={cn(
+                      "absolute inset-y-0 left-0 w-0.5",
+                      trade.direction === "LONG" ? "bg-profit" : "bg-loss"
+                    )}
+                  />
+                  <div className="flex items-center gap-1.5">
+                    <span className="num text-[13px] font-semibold">{trade.symbol}</span>
+                    <PropertyPill
+                      variant={trade.direction === "LONG" ? "profit" : "loss"}
+                      label={directionLabel(trade.direction, marketType)}
+                    />
                   </div>
+                  <p className="num mt-0.5 text-[11px] leading-none text-muted-foreground">
+                    {formatDateRange(trade.openTime, trade.closeTime)}
+                  </p>
                 </td>
 
                 {/* Aset */}
-                <td className="py-2 px-3">
+                <td className="px-3 py-1.5">
                   <PropertyPill marketType={marketType ?? undefined} />
                 </td>
 
                 {/* Mode */}
-                <td className="py-2 px-3">
+                <td className="px-3 py-1.5">
                   <PropertyPill variant="mode" label={modeLabel} />
                 </td>
 
                 {/* Hasil */}
-                <td className="py-2 px-3">
+                <td className="px-3 py-1.5">
                   {trade.status === "OPEN" ? (
                     <PropertyPill variant="neutral" label="Open" />
                   ) : profit === null ? (
@@ -139,30 +132,26 @@ export function TradesTable({ trades, accounts }: { trades: TradeListItem[]; acc
                 </td>
 
                 {/* P&L */}
-                <td className="py-2 px-3 text-right">
+                <td className="px-3 py-1.5 text-right">
                   <span
-                    className="text-[13px] font-medium"
-                    style={{
-                      color: isProfit
-                        ? "var(--color-profit)"
-                        : isLoss
-                        ? "var(--color-loss)"
-                        : "var(--color-muted-foreground)",
-                    }}
+                    className={cn(
+                      "num text-[13px] font-semibold",
+                      isProfit ? "text-profit" : isLoss ? "text-loss" : "text-muted-foreground"
+                    )}
                   >
                     {formatPnl(profit, trade.account.currency)}
                   </span>
                 </td>
 
                 {/* R */}
-                <td className="py-2 px-3 text-right">
-                  <span className="text-[13px] text-muted-foreground">
+                <td className="px-3 py-1.5 text-right">
+                  <span className="num text-[13px] text-muted-foreground">
                     {trade.rMultiple !== null ? `${trade.rMultiple > 0 ? "+" : ""}${trade.rMultiple}` : "–"}
                   </span>
                 </td>
 
                 {/* Actions */}
-                <td className="py-2 px-3" onClick={(e) => e.stopPropagation()}>
+                <td className="px-3 py-1.5" onClick={(e) => e.stopPropagation()}>
                   <TradeRowActions trade={trade} accounts={accounts} />
                 </td>
               </tr>
@@ -172,12 +161,12 @@ export function TradesTable({ trades, accounts }: { trades: TradeListItem[]; acc
       </table>
 
       {/* + Baris baru */}
-      <div className="border-b border-border">
+      <div className="border-t border-border">
         <button
           onClick={() => setQuickAddOpen(true)}
-          className="flex items-center gap-2 px-3 py-2 text-[12px] text-muted-foreground hover:text-foreground transition-colors w-full"
+          className="flex w-full items-center gap-2 px-3 py-2 text-[12px] text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="size-3.5" />
           Baris baru
         </button>
       </div>

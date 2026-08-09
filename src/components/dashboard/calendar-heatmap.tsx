@@ -28,19 +28,16 @@ function formatDay(d: Date) {
   return d.toISOString().slice(0, 10);
 }
 
+// Intensity is expressed as opacity over the profit/loss tokens rather than as
+// fixed tints, so the ramp follows whichever theme is active.
 function cellBg(value: number | undefined): string {
-  if (value === undefined) return "#F1EFE8";
-  if (value > 0) {
-    if (value > 100) return "#1D9E75";
-    if (value > 30)  return "#9FE1CB";
-    return "#E1F5EE";
-  }
-  if (value < 0) {
-    if (value < -100) return "#E24B4A";
-    if (value < -30)  return "#F7C1C1";
-    return "#FCEBEB";
-  }
-  return "#F1EFE8";
+  if (value === undefined || value === 0) return "var(--muted)";
+
+  const token = value > 0 ? "var(--profit)" : "var(--loss)";
+  const magnitude = Math.abs(value);
+  const strength = magnitude > 100 ? 100 : magnitude > 30 ? 55 : 22;
+
+  return `color-mix(in oklch, ${token} ${strength}%, var(--muted))`;
 }
 
 const DAYS = ["Min", "Sen", "Sel", "Rab", "Kam", "Jum", "Sab"];
@@ -49,8 +46,10 @@ export function CalendarHeatmap({ data }: CalendarHeatmapProps) {
   const weeks = getLast12Weeks();
 
   return (
-    <div className="rounded-xl border border-border p-4">
-      <p className="text-[13px] font-medium mb-3">Kalender P&amp;L</p>
+    <div className="rounded-lg border border-border bg-card p-4">
+      <p className="mb-3 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+        Kalender P&amp;L
+      </p>
       <div className="flex gap-1.5">
         {/* Day labels */}
         <div className="flex flex-col gap-1 pt-5">

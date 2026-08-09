@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+﻿import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
@@ -18,7 +18,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h1 className="text-[20px] font-medium">Admin Panel</h1>
+              <h1 className="text-[17px] font-semibold tracking-tight">Admin Panel</h1>
               <p className="text-[12px] text-muted-foreground">Kelola pengguna dan sistem</p>
             </div>
           </div>

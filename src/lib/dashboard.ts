@@ -117,6 +117,35 @@ export async function getAccountNetProfitMap(accountIds: string[]) {
   return new Map(sums.map((s) => [s.accountId, s._sum.netProfit ?? 0]));
 }
 
+const WIB_OFFSET_MS = 7 * 60 * 60 * 1000;
+
+// Net P&L of trades closed *today in WIB*, for the top bar readout.
+// Day boundaries are derived by shifting into WIB and back rather than reading
+// the server clock's local date — on Vercel that clock is UTC, which would roll
+// the day over seven hours early for Indonesian users.
+export async function getTodayNetProfit(userId: string) {
+  const shifted = new Date(Date.now() + WIB_OFFSET_MS);
+  const startOfDayUtc = new Date(
+    Date.UTC(shifted.getUTCFullYear(), shifted.getUTCMonth(), shifted.getUTCDate()) - WIB_OFFSET_MS
+  );
+  const endOfDayUtc = new Date(startOfDayUtc.getTime() + 24 * 60 * 60 * 1000);
+
+  const result = await prisma.trade.aggregate({
+    where: {
+      account: { userId },
+      status: TradeStatus.CLOSED,
+      closeTime: { gte: startOfDayUtc, lt: endOfDayUtc },
+    },
+    _sum: { netProfit: true },
+    _count: true,
+  });
+
+  return {
+    netProfit: result._sum.netProfit ?? 0,
+    tradeCount: result._count,
+  };
+}
+
 export async function getCalendarHeatmap(userId: string, accountId?: string) {
   const accountFilter = accountId
     ? { accountId }

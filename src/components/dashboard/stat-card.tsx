@@ -1,3 +1,5 @@
+import { cn } from "@/lib/utils";
+
 interface StatCardProps {
   label: string;
   value: string;
@@ -7,24 +9,21 @@ interface StatCardProps {
 
 export function StatCard({ label, value, subValue, trend = "neutral" }: StatCardProps) {
   return (
-    <div className="bg-secondary rounded-xl px-3.5 py-3">
-      <p className="text-[12px] text-muted-foreground mb-1">{label}</p>
+    <div className="rounded-lg border border-border bg-card px-3.5 py-3">
+      <p className="text-[10.5px] tracking-wider text-muted-foreground uppercase">{label}</p>
       <p
-        className="text-[22px] font-medium leading-none"
-        style={{
-          color:
-            trend === "positive"
-              ? "var(--color-profit)"
-              : trend === "negative"
-              ? "var(--color-loss)"
-              : "var(--color-foreground)",
-        }}
+        className={cn(
+          "num mt-1.5 text-[21px] leading-none font-semibold",
+          trend === "positive"
+            ? "text-profit"
+            : trend === "negative"
+            ? "text-loss"
+            : "text-foreground"
+        )}
       >
         {value}
       </p>
-      {subValue && (
-        <p className="text-[11px] text-muted-foreground mt-1">{subValue}</p>
-      )}
+      {subValue && <p className="mt-1.5 text-[11px] text-muted-foreground">{subValue}</p>}
     </div>
   );
 }

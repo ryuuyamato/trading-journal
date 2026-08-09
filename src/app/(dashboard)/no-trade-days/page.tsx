@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+﻿import { Suspense } from "react";
 import { AlertCircle, ShieldAlert } from "lucide-react";
 import { fetchFeed, type FfEvent } from "@/lib/calendar/fetch";
 import { normalizeEvents } from "@/lib/calendar/normalize";
@@ -34,11 +34,11 @@ export default function NoTradeDaysPage() {
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-[20px] font-medium">No Trade Day</h1>
+        <h1 className="text-[17px] font-semibold tracking-tight">No Trade Day</h1>
         <p className="text-[12px] text-muted-foreground mt-0.5">
           Hari-hari yang sebaiknya dihindari atau diwaspadai untuk trading Gold &amp; Crypto,
           berdasarkan fundamental dasar (rilis data ekonomi berdampak tinggi, akhir pekan,
-          expiry kontrak bulanan) · 14 hari ke depan
+          expiry kontrak bulanan) Â· 14 hari ke depan
         </p>
       </div>
       <Suspense fallback={<NoTradeDaysSkeleton />}>
@@ -108,7 +108,7 @@ function NoTradeDaysList({ days }: { days: NoTradeDay[] }) {
                     }}
                   >
                     <ShieldAlert className="h-3 w-3" />
-                    {INSTRUMENT_LABEL[reason.instrument]} · {isAvoid ? "Hindari" : "Waspada"}
+                    {INSTRUMENT_LABEL[reason.instrument]} Â· {isAvoid ? "Hindari" : "Waspada"}
                   </span>
                   <div className="min-w-0">
                     <p className="text-[12.5px] font-medium">{reason.label}</p>
@@ -121,9 +121,9 @@ function NoTradeDaysList({ days }: { days: NoTradeDay[] }) {
         </div>
       ))}
       <p className="text-[11px] text-muted-foreground px-1 pt-1">
-        Data Kalender Ekonomi mencakup ±2 minggu ke depan. Di luar rentang itu, hanya aturan
+        Data Kalender Ekonomi mencakup Â±2 minggu ke depan. Di luar rentang itu, hanya aturan
         tetap (akhir pekan, NFP, expiry kontrak bulanan) yang aktif. Ini adalah panduan
-        berbasis fundamental dasar, bukan jaminan — selalu sesuaikan dengan analisis &amp; rencana trading Anda sendiri.
+        berbasis fundamental dasar, bukan jaminan â€” selalu sesuaikan dengan analisis &amp; rencana trading Anda sendiri.
       </p>
     </div>
   );
@@ -155,7 +155,7 @@ function FetchErrorPanel({ message }: { message: string }) {
         <p className="text-[13px] font-medium">Gagal mengambil data Kalender Ekonomi</p>
         <p className="text-[12px] text-muted-foreground mt-1 font-mono">{message}</p>
         <p className="text-[11px] text-muted-foreground mt-2">
-          Aturan tetap (akhir pekan, NFP, expiry bulanan) tetap aktif — coba refresh halaman dalam beberapa menit.
+          Aturan tetap (akhir pekan, NFP, expiry bulanan) tetap aktif â€” coba refresh halaman dalam beberapa menit.
         </p>
       </div>
     </div>

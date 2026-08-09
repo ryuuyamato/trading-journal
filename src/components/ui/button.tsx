@@ -8,16 +8,26 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // Solid brand yellow. Hover lightens rather than fades, so the button
+        // never looks disabled against the near-black ground.
+        default:
+          "bg-primary font-semibold text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),white_18%)]",
         outline:
-          "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
+          "border-border bg-transparent hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_5%)] aria-expanded:bg-secondary aria-expanded:text-secondary-foreground",
+          "bg-secondary text-secondary-foreground hover:bg-accent aria-expanded:bg-accent aria-expanded:text-secondary-foreground",
         ghost:
-          "hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:hover:bg-muted/50",
+          "hover:bg-accent hover:text-foreground aria-expanded:bg-accent aria-expanded:text-foreground",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20",
         link: "text-primary underline-offset-4 hover:underline",
+        // Direction toggles for the order ticket. Green/red here is the one
+        // place a control borrows the P&L palette — it *is* the direction.
+        // Ink is the page background, which flips with the theme — white text on
+        // the dark theme's bright #0ECB81 would only reach ~2:1 contrast.
+        long: "bg-profit font-semibold text-background hover:bg-[color-mix(in_oklch,var(--profit),white_12%)]",
+        short:
+          "bg-loss font-semibold text-background hover:bg-[color-mix(in_oklch,var(--loss),white_12%)]",
       },
       size: {
         default:

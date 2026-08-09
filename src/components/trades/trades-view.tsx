@@ -8,6 +8,7 @@ import { TradesBoard } from "@/components/trades/views/trades-board";
 import { TradesCalendar } from "@/components/trades/views/trades-calendar";
 import { TradesGallery } from "@/components/trades/views/trades-gallery";
 import type { AccountOption, TradeListItem } from "@/components/trades/types";
+import { cn } from "@/lib/utils";
 
 const VIEWS = [
   { value: "table", label: "Tabel" },
@@ -28,39 +29,43 @@ export function TradesView({ accounts, trades }: { accounts: AccountOption[]; tr
   });
 
   return (
-    <div className="space-y-0">
-      {/* View tabs + actions */}
-      <div className="flex items-center justify-between border-b border-border pb-0">
-        <div className="flex gap-0">
+    <div className="space-y-3">
+      {/* View switcher + actions */}
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* Segmented control: the whole set of views stays visible, and the
+            active one is a raised chip rather than an underline. */}
+        <div className="flex items-center gap-0.5 rounded-lg bg-secondary p-[3px]">
           {VIEWS.map((tab) => (
             <button
               key={tab.value}
               onClick={() => setView(tab.value)}
-              className={
+              className={cn(
+                "rounded-md px-3 py-1 text-[12.5px] transition-colors",
                 view === tab.value
-                  ? "px-3 py-2 text-[13px] font-medium text-foreground border-b-2 border-foreground -mb-px transition-colors"
-                  : "px-3 py-2 text-[13px] text-muted-foreground hover:text-foreground transition-colors"
-              }
+                  ? "bg-accent font-medium text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
             >
               {tab.label}
             </button>
           ))}
         </div>
-        <div className="flex items-center gap-1 pb-1">
+
+        <div className="flex items-center gap-1">
           <button
             disabled
             title="Filter — segera hadir"
-            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-muted-foreground/50 cursor-not-allowed rounded-md"
+            className="flex cursor-not-allowed items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-muted-foreground/40"
           >
-            <SlidersHorizontal className="h-3.5 w-3.5" />
+            <SlidersHorizontal className="size-3.5" />
             Filter
           </button>
           <button
             onClick={() => setSortDir((d) => (d === "desc" ? "asc" : "desc"))}
             title={sortDir === "desc" ? "Terbaru lebih dulu — klik untuk membalik" : "Terlama lebih dulu — klik untuk membalik"}
-            className="flex items-center gap-1.5 px-2 py-1 text-[12px] text-muted-foreground hover:text-foreground transition-colors rounded-md hover:bg-secondary"
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
-            <ArrowUpDown className="h-3.5 w-3.5" />
+            <ArrowUpDown className="size-3.5" />
             Urut · {sortDir === "desc" ? "Terbaru" : "Terlama"}
           </button>
           <NewTradeDialog accounts={accounts} />
