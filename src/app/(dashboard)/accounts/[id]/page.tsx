@@ -144,7 +144,7 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-medium">{account.name}</h1>
+            <h1 className="text-[17px] font-semibold tracking-tight">{account.name}</h1>
             <PropertyPill marketType={account.marketType} />
             {!account.isActive && <PropertyPill variant="neutral" label="Nonaktif" />}
           </div>

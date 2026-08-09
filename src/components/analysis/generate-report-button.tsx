@@ -41,7 +41,7 @@ export function GenerateReportButton({ accountId, remaining }: Props) {
         {loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
         {loading ? "Membuat analisis…" : remaining <= 0 ? "Token bulan ini habis" : "Buat Analisis Baru"}
       </button>
-      {error && <p className="text-[11px] text-red-500 max-w-72 text-right">{error}</p>}
+      {error && <p className="max-w-72 text-right text-[11px] text-destructive">{error}</p>}
     </div>
   );
 }

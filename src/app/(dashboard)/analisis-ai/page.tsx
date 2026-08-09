@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -41,7 +41,7 @@ export default async function AnalisisAiPage({
     return (
       <div className="max-w-3xl space-y-4">
         <div>
-          <h1 className="text-[20px] font-medium">Analisis AI</h1>
+          <h1 className="text-[17px] font-semibold tracking-tight">Analisis AI</h1>
         </div>
         <div className="py-16 text-center text-[13px] text-muted-foreground border border-border rounded-xl">
           Anda belum memiliki akun trading. Buat akun terlebih dahulu di halaman{" "}
@@ -72,10 +72,10 @@ export default async function AnalisisAiPage({
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-[20px] font-medium">Analisis AI</h1>
+        <h1 className="text-[17px] font-semibold tracking-tight">Analisis AI</h1>
         <p className="text-[12px] text-muted-foreground mt-0.5">
-          Minta AI membuat ringkasan performa trading — kekuatan, kelemahan, dan rekomendasi —
-          tersimpan sebagai catatan permanen · <span className="font-medium">{quota.freeLimit} token gratis / bulan</span> untuk semua akun · tambahan Rp {PRICE_PER_TOKEN_IDR.toLocaleString("id-ID")}/token
+          Minta AI membuat ringkasan performa trading â€” kekuatan, kelemahan, dan rekomendasi â€”
+          tersimpan sebagai catatan permanen Â· <span className="font-medium">{quota.freeLimit} token gratis / bulan</span> untuk semua akun Â· tambahan Rp {PRICE_PER_TOKEN_IDR.toLocaleString("id-ID")}/token
         </p>
       </div>
 
@@ -98,7 +98,7 @@ export default async function AnalisisAiPage({
         </div>
       )}
 
-      {/* Quota card — per-user */}
+      {/* Quota card â€” per-user */}
       <div className="rounded-xl border border-border p-4 space-y-3">
         <div className="flex items-start justify-between gap-4 flex-wrap">
           <div>
@@ -106,12 +106,12 @@ export default async function AnalisisAiPage({
               {quota.freeRemaining} dari {quota.freeLimit} token gratis tersisa bulan ini
               {quota.purchasedBalance > 0 && (
                 <span className="ml-2 text-[12px] font-normal text-muted-foreground">
-                  · Saldo terbeli: {quota.purchasedBalance} token
+                  Â· Saldo terbeli: {quota.purchasedBalance} token
                 </span>
               )}
             </p>
             <p className="text-[11.5px] text-muted-foreground mt-0.5">
-              Token berlaku untuk semua akun · Reset {nextResetLabel(quota.period)}
+              Token berlaku untuk semua akun Â· Reset {nextResetLabel(quota.period)}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -126,7 +126,7 @@ export default async function AnalisisAiPage({
             {purchases.map((p) => (
               <div key={p.id} className="flex items-center justify-between gap-2">
                 <span className="text-[12px] text-muted-foreground">
-                  {p.quantity} token · {formatDateTime(p.createdAt)}
+                  {p.quantity} token Â· {formatDateTime(p.createdAt)}
                 </span>
                 <div className="flex items-center gap-2">
                   <span className="text-[12px] text-muted-foreground">
@@ -159,7 +159,7 @@ export default async function AnalisisAiPage({
                 <div className="min-w-0">
                   <p className="text-[13px] font-medium truncate">{r.headline}</p>
                   <p className="text-[11.5px] text-muted-foreground mt-0.5">
-                    {periodLabel(r.period)} · dibuat {formatDateTime(r.createdAt)}
+                    {periodLabel(r.period)} Â· dibuat {formatDateTime(r.createdAt)}
                   </p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />

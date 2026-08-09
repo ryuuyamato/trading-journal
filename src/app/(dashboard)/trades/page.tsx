@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+﻿import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TradesView } from "@/components/trades/trades-view";
 import type { TradeListItem } from "@/components/trades/types";
@@ -69,7 +69,7 @@ export default async function TradesPage() {
   return (
     <div className="max-w-5xl space-y-0">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-[20px] font-medium">Jurnal</h1>
+        <h1 className="text-[17px] font-semibold tracking-tight">Jurnal</h1>
       </div>
 
       <TradesView accounts={accounts} trades={items} />

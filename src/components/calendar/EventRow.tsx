@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ChevronRight } from "lucide-react";
 import { EventAnalysisPanel } from "./EventAnalysisPanel";
 import { cn } from "@/lib/utils";
+import { IMPACT_DOT, IMPACT_ROW_BG } from "@/lib/calendar/impact-colors";
 
 interface Analysis {
   id: string;
@@ -29,20 +30,6 @@ interface Props {
   event: Event;
 }
 
-const IMPACT_DOT: Record<string, string> = {
-  HIGH: "bg-red-500",
-  MEDIUM: "bg-amber-400",
-  LOW: "bg-green-500",
-  HOLIDAY: "bg-blue-400",
-};
-
-const IMPACT_BG: Record<string, string> = {
-  HIGH: "bg-red-50 dark:bg-red-950/20",
-  MEDIUM: "bg-amber-50 dark:bg-amber-950/20",
-  LOW: "",
-  HOLIDAY: "bg-blue-50 dark:bg-blue-950/20",
-};
-
 export function EventRow({ event }: Props) {
   const [expanded, setExpanded] = useState(false);
 
@@ -54,7 +41,7 @@ export function EventRow({ event }: Props) {
   });
 
   return (
-    <div className={cn("border-b border-border last:border-0", IMPACT_BG[event.impact])}>
+    <div className={cn("border-b border-border last:border-0", IMPACT_ROW_BG[event.impact])}>
       <button
         onClick={() => setExpanded((v) => !v)}
         className="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-secondary/40 transition-colors"

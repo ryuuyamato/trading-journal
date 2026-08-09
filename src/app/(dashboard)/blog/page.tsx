@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 import { Newspaper } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Blog — TradeJournal",
+  title: "Blog â€” TradeJournal",
   robots: { index: false, follow: false },
 };
 
@@ -19,7 +19,7 @@ export default async function BlogPage() {
   return (
     <div className="max-w-3xl space-y-4">
       <div>
-        <h1 className="text-[20px] font-medium">Blog</h1>
+        <h1 className="text-[17px] font-semibold tracking-tight">Blog</h1>
         <p className="text-[12px] text-muted-foreground mt-0.5">
           Tulisan dan update khusus untuk pengguna TradeJournal.
         </p>

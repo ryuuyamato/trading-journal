@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { AlertTriangle } from "lucide-react";
 
@@ -12,7 +12,7 @@ export default function CalendarError({
   return (
     <div className="max-w-5xl space-y-4">
       <div>
-        <h1 className="text-[20px] font-medium">Kalender Ekonomi</h1>
+        <h1 className="text-[17px] font-semibold tracking-tight">Kalender Ekonomi</h1>
       </div>
       <div className="rounded-xl border border-border p-8 flex flex-col items-center gap-3 text-center">
         <AlertTriangle className="h-8 w-8 text-amber-500" />

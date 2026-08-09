@@ -76,7 +76,7 @@ export function EventAnalysisPanel({
           )}
           {loading ? "Menganalisis..." : "Minta analisis AI"}
         </button>
-        {error && <p className="mt-2 text-[11px] text-red-500">{error}</p>}
+        {error && <p className="mt-2 text-[11px] text-destructive">{error}</p>}
       </div>
     );
   }
@@ -87,12 +87,12 @@ export function EventAnalysisPanel({
   return (
     <div className="mt-3 pt-3 border-t border-border space-y-2">
       <div className="flex items-center gap-1.5">
-        <Sparkles className="h-3.5 w-3.5 text-[#1D9E75] shrink-0" />
-        <span className="text-[11px] font-medium text-[#1D9E75]">Analisis AI</span>
+        <Sparkles className="h-3.5 w-3.5 shrink-0 text-brand-ink" />
+        <span className="text-[11px] font-medium text-brand-ink">Analisis AI</span>
         {analysis.bias && (
           <span
             className={`ml-auto flex items-center gap-1 text-[11px] font-medium ${
-              isBullish ? "text-green-600" : isBearish ? "text-red-500" : "text-muted-foreground"
+              isBullish ? "text-profit" : isBearish ? "text-loss" : "text-muted-foreground"
             }`}
           >
             {isBullish ? (

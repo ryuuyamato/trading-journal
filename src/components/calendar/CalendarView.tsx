@@ -77,12 +77,12 @@ export function CalendarView({ events, rawCount }: Props) {
         const highCount = dayEvents.filter((e) => e.impact === "HIGH").length;
 
         return (
-          <div key={dateKey} className="rounded-xl border border-border overflow-hidden">
+          <div key={dateKey} className="overflow-hidden rounded-lg border border-border bg-card">
             {/* Day header */}
-            <div className="flex items-center justify-between px-4 py-2 bg-secondary/50 border-b border-border">
+            <div className="flex items-center justify-between border-b border-border bg-secondary/50 px-4 py-2">
               <div className="flex items-center gap-2">
                 {isToday && (
-                  <span className="px-1.5 py-0.5 text-[10px] font-medium rounded bg-[#1D9E75] text-white">
+                  <span className="rounded-sm bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground uppercase">
                     Hari ini
                   </span>
                 )}
@@ -93,7 +93,7 @@ export function CalendarView({ events, rawCount }: Props) {
               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                 {highCount > 0 && (
                   <span className="flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    <span className="size-1.5 rounded-full bg-loss" />
                     {highCount} high
                   </span>
                 )}

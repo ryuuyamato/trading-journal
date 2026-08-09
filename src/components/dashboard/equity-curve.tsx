@@ -17,10 +17,12 @@ interface EquityCurveProps {
 
 export function EquityCurve({ data }: EquityCurveProps) {
   return (
-    <div className="rounded-xl border border-border p-4">
-      <p className="text-[13px] font-medium mb-3">Kurva ekuitas</p>
+    <div className="rounded-lg border border-border bg-card p-4">
+      <p className="mb-3 text-[11px] font-medium tracking-wider text-muted-foreground uppercase">
+        Kurva ekuitas
+      </p>
       {data.length === 0 ? (
-        <div className="h-40 flex items-center justify-center text-[12px] text-muted-foreground">
+        <div className="flex h-40 items-center justify-center text-[12px] text-muted-foreground">
           Belum ada trade tertutup
         </div>
       ) : (
@@ -55,18 +57,20 @@ export function EquityCurve({ data }: EquityCurveProps) {
               contentStyle={{
                 backgroundColor: "var(--color-card)",
                 border: "1px solid var(--color-border)",
-                borderRadius: "8px",
+                borderRadius: "4px",
                 fontSize: 12,
                 boxShadow: "none",
               }}
+              itemStyle={{ color: "var(--color-foreground)" }}
+              labelStyle={{ color: "var(--color-muted-foreground)" }}
             />
             <Line
               type="monotone"
               dataKey="equity"
-              stroke="#1D9E75"
+              stroke="var(--color-brand)"
               strokeWidth={2}
               dot={false}
-              activeDot={{ r: 3, fill: "#1D9E75", strokeWidth: 0 }}
+              activeDot={{ r: 3, fill: "var(--color-brand)", strokeWidth: 0 }}
             />
           </LineChart>
         </ResponsiveContainer>

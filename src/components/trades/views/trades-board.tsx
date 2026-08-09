@@ -8,9 +8,9 @@ import type { TradeListItem } from "@/components/trades/types";
 type ColumnKey = "OPEN" | "PROFIT" | "LOSS" | "BREAK_EVEN";
 
 const COLUMNS: { key: ColumnKey; label: string; dot: string }[] = [
-  { key: "OPEN", label: "Open", dot: "bg-blue-400" },
-  { key: "PROFIT", label: "Profit", dot: "bg-[var(--color-profit)]" },
-  { key: "LOSS", label: "Loss", dot: "bg-[var(--color-loss)]" },
+  { key: "OPEN", label: "Open", dot: "bg-primary" },
+  { key: "PROFIT", label: "Profit", dot: "bg-profit" },
+  { key: "LOSS", label: "Loss", dot: "bg-loss" },
   { key: "BREAK_EVEN", label: "Break Even", dot: "bg-muted-foreground" },
 ];
 

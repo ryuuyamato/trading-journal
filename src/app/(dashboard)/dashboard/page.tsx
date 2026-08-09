@@ -8,25 +8,8 @@ import { DirectionBreakdown } from "@/components/dashboard/direction-breakdown";
 import { WinLossBreakdown } from "@/components/dashboard/win-loss-breakdown";
 import { getExchangeRates, toIdr, formatIdr } from "@/lib/exchange-rates";
 import { TradeStatus } from "@/generated/prisma/enums";
-
-const MARKET_LABEL: Record<string, string> = {
-  FOREX: "Forex",
-  COMMODITY: "Komoditas",
-  STOCK_IDX: "Saham IDX",
-  STOCK_US: "Saham US",
-  CRYPTO_SPOT: "Crypto Spot",
-  CRYPTO_FUTURES: "Crypto Futures",
-  MULTI_ASSET: "Multi Aset",
-};
-
-function fmtBalance(amount: number, currency: string): string {
-  if (currency === "IDR") return `Rp ${Math.round(amount).toLocaleString("id-ID")}`;
-  if (currency === "USC") {
-    const usd = amount / 100;
-    return `$${usd.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  }
-  return `${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
-}
+import { marketDotColor, marketLabel } from "@/lib/market-colors";
+import { formatAccountAmount } from "@/lib/utils";
 
 export default async function DashboardPage() {
   const session = await auth();
@@ -95,22 +78,26 @@ export default async function DashboardPage() {
   const fmtUsd = (v: number) => `$${Math.abs(v).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
   return (
-    <div className="space-y-5 max-w-4xl">
-      <div>
-        <h1 className="text-[20px] font-medium">Dashboard</h1>
-        <p className="text-[12px] text-muted-foreground mt-0.5">
-          Semua akun · {monthLabel}
-        </p>
+    <div className="space-y-5">
+      <div className="flex items-baseline justify-between gap-4">
+        <div>
+          <h1 className="text-[17px] font-semibold tracking-tight">Dashboard</h1>
+          <p className="mt-0.5 text-[11.5px] text-muted-foreground">
+            Semua akun · {monthLabel}
+          </p>
+        </div>
       </div>
 
-      {/* Account balances */}
+      {/* ── Wallet: capital + realised P&L per account ─────────────────── */}
       {accountsWithTotal.length > 0 && (
-        <div className="rounded-xl border border-border overflow-hidden">
-          <div className="px-4 py-2.5 border-b border-border bg-secondary/30 flex items-center justify-between gap-4">
-            <span className="text-[12px] font-medium">Total Saldo Akun</span>
+        <div className="overflow-hidden rounded-lg border border-border bg-card">
+          <div className="flex items-center justify-between gap-4 border-b border-border bg-secondary/40 px-4 py-2.5">
+            <span className="text-[11px] font-medium tracking-wider uppercase">
+              Total Saldo Akun
+            </span>
             {rates ? (
               <span className="text-[11px] text-muted-foreground">
-                1 USD = {formatIdr(rates.usdToIdr)} · kurs {rates.date}
+                1 USD = <span className="num">{formatIdr(rates.usdToIdr)}</span> · kurs {rates.date}
               </span>
             ) : (
               <span className="text-[11px] text-muted-foreground">Kurs tidak tersedia</span>
@@ -120,17 +107,28 @@ export default async function DashboardPage() {
             {accountsWithTotal.map((acc) => {
               const idr = rates ? toIdr(acc.totalBalance, acc.currency, rates) : null;
               return (
-                <div key={acc.id} className="flex items-center justify-between px-4 py-2.5 gap-4">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <span className="text-[13px] font-medium truncate">{acc.name}</span>
-                    <span className="text-[11px] text-muted-foreground shrink-0">
-                      {MARKET_LABEL[acc.marketType] ?? acc.marketType}
+                <div
+                  key={acc.id}
+                  className="flex items-center justify-between gap-4 px-4 py-2.5 transition-colors hover:bg-accent/30"
+                >
+                  <div className="flex min-w-0 items-center gap-2.5">
+                    <span
+                      className="size-1.5 shrink-0 rounded-full"
+                      style={{ backgroundColor: marketDotColor(acc.marketType) }}
+                    />
+                    <span className="truncate text-[13px] font-medium">{acc.name}</span>
+                    <span className="shrink-0 text-[11px] text-muted-foreground">
+                      {marketLabel(acc.marketType)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-3 shrink-0 text-right">
-                    <span className="text-[13px] font-medium">{fmtBalance(acc.totalBalance, acc.currency)}</span>
+                  <div className="flex shrink-0 items-center gap-3 text-right">
+                    <span className="num text-[13px] font-semibold">
+                      {formatAccountAmount(acc.totalBalance, acc.currency)}
+                    </span>
                     {idr !== null && acc.currency !== "IDR" && (
-                      <span className="text-[11.5px] text-muted-foreground w-32 text-right">{formatIdr(idr)}</span>
+                      <span className="num w-32 text-right text-[11.5px] text-muted-foreground">
+                        {formatIdr(idr)}
+                      </span>
                     )}
                   </div>
                 </div>
@@ -138,16 +136,16 @@ export default async function DashboardPage() {
             })}
           </div>
           {totalIdr !== null && (accountsWithTotal.length > 1 || accountsWithTotal[0]?.currency !== "IDR") && (
-            <div className="px-4 py-2.5 border-t border-border bg-secondary/30 flex items-center justify-between">
-              <span className="text-[12px] font-medium">Total (IDR)</span>
-              <span className="text-[13px] font-semibold">{formatIdr(totalIdr)}</span>
+            <div className="flex items-center justify-between border-t border-border bg-secondary/40 px-4 py-2.5">
+              <span className="text-[11px] font-medium tracking-wider uppercase">Total (IDR)</span>
+              <span className="num text-[14px] font-semibold text-primary">{formatIdr(totalIdr)}</span>
             </div>
           )}
         </div>
       )}
 
       {/* Metric cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <StatCard
           label="Win rate"
           value={`${stats.winRate.toFixed(0)}%`}
@@ -172,7 +170,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Secondary metric cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+      <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         <StatCard
           label="Win streak terpanjang"
           value={stats.longestWinStreak.toString()}

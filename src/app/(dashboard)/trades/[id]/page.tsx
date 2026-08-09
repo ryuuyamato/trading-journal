@@ -135,7 +135,7 @@ export default async function TradeDetailPage({ params }: { params: Promise<{ id
       <div className="flex items-start justify-between gap-3">
         <div className="space-y-1.5">
           <div className="flex items-center gap-2">
-            <h1 className="text-[20px] font-medium">{trade.symbol}</h1>
+            <h1 className="num text-[17px] font-semibold tracking-tight">{trade.symbol}</h1>
             <PropertyPill
               variant={trade.direction === "LONG" ? "profit" : "loss"}
               label={trade.direction === "LONG" ? "Long / Buy" : "Short / Sell"}
