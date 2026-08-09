@@ -14,18 +14,18 @@ export default async function PendingApprovalPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="w-full max-w-sm px-4">
-        <Card className="shadow-lg">
-          <CardHeader className="text-center space-y-2">
+        <Card>
+          <CardHeader className="space-y-2 text-center">
             <div className="flex justify-center">
-              <div className="p-2 rounded-lg bg-primary/10">
+              <div className="rounded-md bg-secondary p-2">
                 {isRejected ? (
-                  <XCircle className="h-6 w-6 text-destructive" />
+                  <XCircle className="size-6 text-destructive" />
                 ) : (
-                  <Clock className="h-6 w-6 text-primary" />
+                  <Clock className="size-6 text-primary" />
                 )}
               </div>
             </div>
-            <CardTitle className="text-xl">
+            <CardTitle className="font-display text-lg tracking-tight">
               {isRejected ? "Akses Ditolak" : "Menunggu Persetujuan"}
             </CardTitle>
             <CardDescription>

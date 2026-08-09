@@ -1,4 +1,4 @@
-﻿export default function AnalitikPage() {
+export default function AnalitikPage() {
   return (
     <div>
       <h1 className="text-[17px] font-semibold tracking-tight">Analitik</h1>

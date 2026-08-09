@@ -381,7 +381,7 @@ export function TradeTicket({
               {/* Two mutually exclusive states read faster as a segmented pair
                   than as a dropdown that must be opened to be read. */}
               <Field label="Status">
-                <div className="flex h-8 items-center gap-1 rounded-lg bg-secondary p-[3px]">
+                <div className="flex h-8 items-center gap-1 rounded-md bg-secondary p-[3px]">
                   {(["OPEN", "CLOSED"] as const).map((s) => (
                     <button
                       key={s}

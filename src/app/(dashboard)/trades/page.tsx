@@ -1,4 +1,4 @@
-﻿import { auth } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { TradesView } from "@/components/trades/trades-view";
 import type { TradeListItem } from "@/components/trades/types";

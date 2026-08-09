@@ -1,15 +1,28 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+// Kandel's type hierarchy: Space Grotesk for display, Inter for UI, JetBrains
+// Mono for every figure. All three are variable fonts, so no weight list.
+const spaceGrotesk = Space_Grotesk({ variable: "--font-space-grotesk", subsets: ["latin"] });
+const inter = Inter({ variable: "--font-inter", subsets: ["latin"] });
+const jetbrainsMono = JetBrains_Mono({ variable: "--font-jetbrains-mono", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TradeJournal — Track. Analyze. Evolve.",
-  description: "Catat dan analisis trading kamu secara profesional",
+  title: "Kandel — Trading Journal",
+  description:
+    "Catat setiap entry, exit, dan alasan di baliknya. Kandel mengubah riwayat trade kamu jadi statistik yang bisa dipakai.",
+  applicationName: "Kandel",
+  appleWebApp: {
+    title: "Kandel",
+    statusBarStyle: "black-translucent",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0B0E11",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -17,7 +30,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html
       lang="id"
       suppressHydrationWarning
-      className={`${geistSans.variable} ${geistMono.variable} h-full`}
+      className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} h-full`}
     >
       <body className="min-h-full antialiased">
         <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} storageKey="tj-theme">

@@ -34,7 +34,7 @@ export function TradesView({ accounts, trades }: { accounts: AccountOption[]; tr
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Segmented control: the whole set of views stays visible, and the
             active one is a raised chip rather than an underline. */}
-        <div className="flex items-center gap-0.5 rounded-lg bg-secondary p-[3px]">
+        <div className="flex items-center gap-0.5 rounded-md bg-secondary p-[3px]">
           {VIEWS.map((tab) => (
             <button
               key={tab.value}
