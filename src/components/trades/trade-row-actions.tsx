@@ -54,7 +54,10 @@ export function TradeRowActions({ trade, accounts }: { trade: TradeFormValues; a
           render={
             <button
               type="button"
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors opacity-0 group-hover:opacity-100 data-[popup-open]:opacity-100"
+              // Touch has no hover, so reveal-on-hover would leave this button
+              // permanently invisible on a phone. Always shown below md, and a
+              // 44px target there; hover-revealed at md and up as before.
+              className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors active:bg-accent md:size-auto md:p-1.5 md:opacity-0 md:hover:bg-secondary md:hover:text-foreground md:group-hover:opacity-100 md:data-popup-open:opacity-100"
               aria-label="Aksi trade"
               onClick={(e) => e.stopPropagation()}
             />
@@ -63,16 +66,16 @@ export function TradeRowActions({ trade, accounts }: { trade: TradeFormValues; a
           <MoreHorizontal className="h-4 w-4" />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-44">
-          <DropdownMenuItem className="gap-2" onClick={() => router.push(`/trades/${trade.id}`)}>
+          <DropdownMenuItem className="min-h-10 gap-2 md:min-h-0" onClick={() => router.push(`/trades/${trade.id}`)}>
             <Eye className="h-3.5 w-3.5" />
             Lihat detail
           </DropdownMenuItem>
-          <DropdownMenuItem className="gap-2" onClick={() => setEditOpen(true)}>
+          <DropdownMenuItem className="min-h-10 gap-2 md:min-h-0" onClick={() => setEditOpen(true)}>
             <Pencil className="h-3.5 w-3.5" />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem
-            className="gap-2 text-destructive focus:text-destructive"
+            className="min-h-10 gap-2 text-destructive focus:text-destructive md:min-h-0"
             onClick={() => setDeleteOpen(true)}
           >
             <Trash2 className="h-3.5 w-3.5" />

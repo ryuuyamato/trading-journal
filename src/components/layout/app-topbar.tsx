@@ -58,7 +58,7 @@ export function AppTopBar({
       : "text-foreground";
 
   return (
-    <header className="fixed inset-x-0 top-0 z-40 flex h-12 items-center gap-2 border-b border-border bg-sidebar px-3">
+    <header className="fixed inset-x-0 top-0 z-40 hidden h-12 items-center gap-2 border-b border-border bg-sidebar px-3 md:flex">
       {/* Brand — mark alone below sm, full lockup above it, per the kit's
           minimum-width rule for the lockup. */}
       <Link href="/dashboard" className="flex shrink-0 items-center">

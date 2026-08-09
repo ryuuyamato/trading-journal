@@ -10,6 +10,7 @@ import {
   Sparkles,
   Newspaper,
   ShieldCheck,
+  Settings,
   type LucideIcon,
 } from "lucide-react";
 
@@ -44,8 +45,28 @@ export const ADMIN_NAV: NavItem = {
   icon: ShieldCheck,
 };
 
-// The five that fit a phone bottom bar without crowding.
-export const MOBILE_NAV: NavItem[] = PRIMARY_NAV.slice(0, 5);
+export const SETTINGS_NAV: NavItem = {
+  href: "/settings",
+  label: "Setelan",
+  icon: Settings,
+};
+
+// The phone tab bar holds four destinations around the centre action button.
+// Everything else lives behind "Lainnya".
+const TAB_HREFS = ["/dashboard", "/trades", "/accounts"];
+
+export const MOBILE_TABS: NavItem[] = TAB_HREFS.map(
+  (href) => PRIMARY_NAV.find((i) => i.href === href)!
+);
+
+// Derived rather than hand-listed, so a destination added to PRIMARY_NAV or
+// SECONDARY_NAV shows up on the phone automatically instead of silently going
+// missing.
+export const MORE_NAV: NavItem[] = [
+  ...PRIMARY_NAV.filter((i) => !TAB_HREFS.includes(i.href)),
+  ...SECONDARY_NAV,
+  SETTINGS_NAV,
+];
 
 export function isNavActive(pathname: string, href: string): boolean {
   // /dashboard must match exactly — every other route would otherwise be

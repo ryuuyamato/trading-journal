@@ -47,7 +47,9 @@ export function AccountRowActions({ account, tradeCount }: { account: AccountFor
           render={
             <button
               type="button"
-              className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors opacity-0 group-hover:opacity-100 data-[popup-open]:opacity-100"
+              // Reveal-on-hover leaves this invisible on touch — always shown
+              // below md, with a 44px target.
+              className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors active:bg-accent md:size-auto md:p-1.5 md:opacity-0 md:hover:bg-secondary md:hover:text-foreground md:group-hover:opacity-100 md:data-popup-open:opacity-100"
               aria-label="Aksi akun"
               onClick={(e) => e.stopPropagation()}
             />

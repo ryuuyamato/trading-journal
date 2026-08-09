@@ -100,7 +100,8 @@ export function AccountTransactionList({
                 <button
                   type="button"
                   onClick={() => setTarget(tx)}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-destructive hover:bg-secondary transition-colors opacity-0 group-hover:opacity-100"
+                  // Reveal-on-hover leaves this invisible on touch.
+                  className="flex size-11 items-center justify-center rounded-md text-muted-foreground transition-colors active:bg-accent md:size-auto md:p-1.5 md:opacity-0 md:hover:bg-secondary md:hover:text-destructive md:group-hover:opacity-100"
                   aria-label="Hapus transaksi"
                 >
                   <Trash2 className="h-3.5 w-3.5" />

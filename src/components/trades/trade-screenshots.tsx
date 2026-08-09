@@ -96,7 +96,8 @@ export function TradeScreenshots({ tradeId, screenshots }: { tradeId: string; sc
                 type="button"
                 disabled={isPending && removingId === s.id}
                 onClick={() => handleRemove(s.id)}
-                className="absolute top-1.5 right-1.5 p-1.5 rounded-md bg-background/80 text-destructive opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+                // Reveal-on-hover leaves this invisible on touch.
+                className="absolute top-1.5 right-1.5 rounded-md bg-background/80 p-2 text-destructive transition-opacity md:p-1.5 md:opacity-0 md:group-hover:opacity-100 md:hover:bg-background"
                 aria-label="Hapus screenshot"
               >
                 <Trash2 className="h-3.5 w-3.5" />

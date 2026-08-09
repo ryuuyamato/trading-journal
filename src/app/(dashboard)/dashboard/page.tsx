@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getDashboardStats, getCalendarHeatmap } from "@/lib/dashboard";
+import { getDashboardStats, getCalendarHeatmap, getTodayNetProfit } from "@/lib/dashboard";
+import { MobileHome } from "@/components/dashboard/mobile-home";
 import { StatCard } from "@/components/dashboard/stat-card";
 import { EquityCurve } from "@/components/dashboard/equity-curve";
 import { CalendarHeatmap } from "@/components/dashboard/calendar-heatmap";
@@ -18,7 +19,7 @@ export default async function DashboardPage() {
   const now = new Date();
   const monthLabel = now.toLocaleString("id-ID", { month: "long", year: "numeric", timeZone: "Asia/Jakarta" });
 
-  const [stats, heatmap, accounts, rates] = await Promise.all([
+  const [stats, heatmap, accounts, rates, today] = await Promise.all([
     getDashboardStats(userId),
     getCalendarHeatmap(userId),
     prisma.tradingAccount.findMany({
@@ -27,6 +28,9 @@ export default async function DashboardPage() {
       orderBy: { createdAt: "asc" },
     }),
     getExchangeRates(),
+    // The layout fetches this too, but a layout cannot pass props to a page —
+    // it is a single aggregate and both callers hit the same request cache.
+    getTodayNetProfit(userId),
   ]);
 
   // Compute total saldo = balance (modal ± deposit/withdrawal) + realised net P&L
@@ -77,8 +81,32 @@ export default async function DashboardPage() {
 
   const fmtUsd = (v: number) => `$${Math.abs(v).toLocaleString("en-US", { maximumFractionDigits: 0 })}`;
 
+  const mobileAccounts = accountsWithTotal.map((acc) => ({
+    id: acc.id,
+    name: acc.name,
+    marketType: acc.marketType,
+    currency: acc.currency,
+    totalBalance: acc.totalBalance,
+    idrValue: rates ? toIdr(acc.totalBalance, acc.currency, rates) : null,
+  }));
+
   return (
-    <div className="space-y-5">
+    <>
+      <MobileHome
+        accounts={mobileAccounts}
+        totalIdr={totalIdr}
+        todayNetProfit={today.netProfit}
+        todayTradeCount={today.tradeCount}
+        stats={{
+          winRate: stats.winRate,
+          profitFactor: stats.profitFactor,
+          totalNetProfit: stats.totalNetProfit,
+          totalTrades: stats.totalTrades,
+        }}
+      />
+
+      {/* Desktop dashboard — unchanged, just gated to md and up. */}
+      <div className="hidden space-y-5 md:block">
       <div className="flex items-baseline justify-between gap-4">
         <div>
           <h1 className="text-[17px] font-semibold tracking-tight">Dashboard</h1>
@@ -216,6 +244,7 @@ export default async function DashboardPage() {
         <EquityCurve data={stats.equityCurve} />
         <CalendarHeatmap data={heatmap} />
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -163,10 +163,22 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-size: 13px;
+    /* 13px suits a dense desktop table read at arm's length; on a phone held in
+       one hand it is too small, so the base steps up below the md breakpoint. */
+    font-size: 15px;
+    /* Removes the grey flash Android paints over tapped elements — the app
+       provides its own active states. */
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (min-width: 768px) {
+    body {
+      font-size: 13px;
+    }
   }
   html {
     @apply font-sans;
+    /* Stops iOS from re-flowing text at its own scale in landscape. */
+    -webkit-text-size-adjust: 100%;
   }
   /* Space Grotesk carries the headings, per the kit's type hierarchy. */
   h1,
