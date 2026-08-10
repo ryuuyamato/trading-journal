@@ -1,6 +1,9 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// Analisis jurnal dijalankan DeepSeek — dihitung per pengguna dan dijual per token,
+// jadi biayanya sensitif. Kalender ekonomi tetap di Claude karena sekali generate
+// hasilnya dipakai semua pengguna. API DeepSeek kompatibel OpenAI, cukup satu POST.
+const DEEPSEEK_BASE_URL = process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com";
+const DEEPSEEK_MODEL = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-pro";
+const REQUEST_TIMEOUT_MS = 180_000;
 
 export interface TradeReportContent {
   overview: string;
@@ -125,24 +128,57 @@ function fallbackResult(rawText: string): TradeReportResult {
   };
 }
 
+interface DeepSeekResponse {
+  choices?: { message?: { content?: string | null } }[];
+}
+
+async function callDeepSeek(prompt: string): Promise<string> {
+  const apiKey = process.env.DEEPSEEK_API_KEY;
+  if (!apiKey) throw new Error("DEEPSEEK_API_KEY belum diset");
+
+  const res = await fetch(`${DEEPSEEK_BASE_URL}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: DEEPSEEK_MODEL,
+      messages: [{ role: "user", content: prompt }],
+      // Prompt sudah menyebut "JSON" dan memuat contoh strukturnya — dua syarat
+      // yang diminta DeepSeek supaya mode ini bekerja.
+      response_format: { type: "json_object" },
+      thinking: { type: "enabled" },
+      reasoning_effort: "high",
+      // Longgar supaya JSON tidak terpotong di tengah; laporan sebenarnya jauh
+      // lebih pendek dari ini.
+      max_tokens: 8192,
+      stream: false,
+    }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`DeepSeek API ${res.status}: ${detail.slice(0, 300)}`);
+  }
+
+  const data = (await res.json()) as DeepSeekResponse;
+  return data.choices?.[0]?.message?.content?.trim() ?? "";
+}
+
 export async function generateTradeReport(input: TradeReportInput): Promise<TradeReportResult> {
   const prompt = buildPrompt(input);
 
-  const stream = client.messages.stream({
-    model: "claude-opus-4-8",
-    max_tokens: 4096,
-    thinking: { type: "adaptive" },
-    messages: [{ role: "user", content: prompt }],
-  });
-
-  const message = await stream.finalMessage();
-  const textBlock = message.content.find((b) => b.type === "text");
-  if (!textBlock || textBlock.type !== "text") {
-    throw new Error("No text response from Claude");
-  }
+  // DeepSeek mendokumentasikan bahwa mode JSON sesekali mengembalikan konten
+  // kosong. Satu percobaan ulang jauh lebih murah daripada memaksa pengguna
+  // menghabiskan token untuk hasil kosong.
+  let text = await callDeepSeek(prompt);
+  if (!text) text = await callDeepSeek(prompt);
+  if (!text) throw new Error("DeepSeek mengembalikan respons kosong");
 
   try {
-    const jsonStr = textBlock.text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+    const jsonStr = text.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
     const parsed = JSON.parse(jsonStr);
     const content = parsed.content && typeof parsed.content === "object" ? parsed.content : parsed;
     return {
@@ -155,6 +191,6 @@ export async function generateTradeReport(input: TradeReportInput): Promise<Trad
       },
     };
   } catch {
-    return fallbackResult(textBlock.text);
+    return fallbackResult(text);
   }
 }
