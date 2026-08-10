@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Direction, EntryMode, MarginMode, MarketType, TradeStatus } from "@/generated/prisma/enums";
+import { filterOwnedTagIds, deriveHoldingMinutes } from "@/lib/trade-write";
 
 const createSchema = z.object({
   accountId: z.string().min(1),
@@ -118,17 +119,24 @@ export async function POST(req: Request) {
   // Neon's HTTP driver doesn't support transactions, so a single create+include
   // (which Prisma would run as an implicit transaction) fails with
   // "Transactions are not supported in HTTP mode". Split into separate queries.
+  const openTime = new Date(tradeData.openTime);
+  const closeTime = tradeData.closeTime ? new Date(tradeData.closeTime) : null;
+
   const created = await prisma.trade.create({
     data: {
       ...tradeData,
-      openTime: new Date(tradeData.openTime),
-      closeTime: tradeData.closeTime ? new Date(tradeData.closeTime) : null,
+      openTime,
+      closeTime,
+      holdingMinutes: deriveHoldingMinutes(openTime, closeTime),
     },
   });
 
-  if (tagIds.length > 0) {
+  // Hanya tag milik pemanggil yang boleh menempel — tanpa saringan ini, id tag
+  // milik orang lain bisa dikirim dan namanya bocor ke trade ini.
+  const ownedTagIds = await filterOwnedTagIds(tagIds, session.user.id);
+  if (ownedTagIds.length > 0) {
     await prisma.tradeTag.createMany({
-      data: tagIds.map((tagId) => ({ tradeId: created.id, tagId })),
+      data: ownedTagIds.map((tagId) => ({ tradeId: created.id, tagId })),
     });
   }
 

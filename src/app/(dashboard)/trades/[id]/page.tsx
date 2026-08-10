@@ -24,6 +24,26 @@ function formatPnl(v: number | null, currency = "USD") {
   return `${prefix}$${Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
+// Sejalan dengan skala di ticket — angka 1-5 tidak berarti apa-apa saat direview
+// berbulan-bulan kemudian.
+const EMOTION_LABELS: Record<number, string> = {
+  1: "Buruk",
+  2: "Ragu",
+  3: "Netral",
+  4: "Yakin",
+  5: "Sangat yakin",
+};
+
+function formatHolding(minutes: number | null) {
+  if (minutes === null || minutes < 0) return "–";
+  if (minutes < 60) return `${minutes} menit`;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (hours < 24) return rest ? `${hours} jam ${rest} menit` : `${hours} jam`;
+  const days = Math.floor(hours / 24);
+  return `${days} hari ${hours % 24} jam`;
+}
+
 function formatNum(v: number | null, suffix = "") {
   return v === null || v === undefined ? "–" : `${v}${suffix}`;
 }
@@ -117,6 +137,8 @@ export default async function TradeDetailPage({ params }: { params: Promise<{ id
     tradeMarketType: trade.tradeMarketType,
     setup: trade.setup,
     notes: trade.notes,
+    emotionBefore: trade.emotionBefore,
+    emotionAfter: trade.emotionAfter,
     tagIds: trade.tags.map((t) => t.tagId),
   };
 
@@ -179,6 +201,7 @@ export default async function TradeDetailPage({ params }: { params: Promise<{ id
       <Section title="Waktu &amp; Harga">
         <Field label="Waktu Buka" value={formatDateTime(trade.openTime)} />
         <Field label="Waktu Tutup" value={formatDateTime(trade.closeTime)} />
+        <Field label="Lama Ditahan" value={formatHolding(trade.holdingMinutes)} />
         <Field label="Mode Entry" value={trade.entryMode === "MULTI_LAYER" ? `Multi-Layer · ${trade.layerCount ?? "?"} layer` : "Single Entry"} />
         <Field label="Harga Buka" value={trade.openPrice} />
         <Field label="Harga Tutup" value={formatNum(trade.closePrice)} />
@@ -242,13 +265,25 @@ export default async function TradeDetailPage({ params }: { params: Promise<{ id
         </div>
       )}
 
-      {(trade.setup || trade.notes) && (
+      {(trade.setup || trade.notes || trade.emotionBefore || trade.emotionAfter) && (
         <div className="rounded-xl border border-border p-4 space-y-3">
           <h2 className="text-[13px] font-medium">Analisis</h2>
           {trade.setup && (
             <div>
               <p className="text-[11px] text-muted-foreground">Setup / Strategi</p>
               <p className="text-[13px] mt-0.5">{trade.setup}</p>
+            </div>
+          )}
+          {(trade.emotionBefore || trade.emotionAfter) && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-[11px] text-muted-foreground">Perasaan sebelum entry</p>
+                <p className="text-[13px] mt-0.5">{EMOTION_LABELS[trade.emotionBefore ?? 0] ?? "–"}</p>
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground">Perasaan setelah keluar</p>
+                <p className="text-[13px] mt-0.5">{EMOTION_LABELS[trade.emotionAfter ?? 0] ?? "–"}</p>
+              </div>
             </div>
           )}
           {trade.notes && (

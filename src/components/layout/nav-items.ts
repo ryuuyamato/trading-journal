@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   Settings,
   Calculator,
+  Tags,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ export const SECONDARY_NAV: NavItem[] = [
   { href: "/playbook", label: "Playbook", icon: Library },
   { href: "/analitik", label: "Analitik", icon: BarChart2 },
   { href: "/review", label: "Review", icon: ClipboardList },
+  { href: "/tags", label: "Tag", icon: Tags },
   { href: "/blog", label: "Blog", icon: Newspaper },
 ];
 

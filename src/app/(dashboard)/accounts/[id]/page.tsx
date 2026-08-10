@@ -95,6 +95,8 @@ export default async function AccountDetailPage({ params }: { params: Promise<{ 
     tradeMarketType: trade.tradeMarketType,
     setup: trade.setup,
     notes: trade.notes,
+    emotionBefore: trade.emotionBefore,
+    emotionAfter: trade.emotionAfter,
     tagIds: trade.tags.map((t) => t.tagId),
     account: trade.account,
     tags: trade.tags.map(({ tag }) => ({ id: tag.id, name: tag.name, color: tag.color })),

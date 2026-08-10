@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { Direction, EntryMode, MarginMode, MarketType, TradeStatus } from "@/generated/prisma/enums";
+import { filterOwnedTagIds, deriveHoldingMinutes } from "@/lib/trade-write";
 
 const updateSchema = z.object({
   accountId: z.string().min(1),
@@ -102,19 +103,25 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   // Neon's HTTP driver doesn't support transactions, so update + nested tag
   // writes (which Prisma would run as an implicit transaction) fail with
   // "Transactions are not supported in HTTP mode". Split into separate queries.
+  const openTime = new Date(tradeData.openTime);
+  const closeTime = tradeData.closeTime ? new Date(tradeData.closeTime) : null;
+
   await prisma.trade.update({
     where: { id },
     data: {
       ...tradeData,
-      openTime: new Date(tradeData.openTime),
-      closeTime: tradeData.closeTime ? new Date(tradeData.closeTime) : null,
+      openTime,
+      closeTime,
+      holdingMinutes: deriveHoldingMinutes(openTime, closeTime),
     },
   });
 
   await prisma.tradeTag.deleteMany({ where: { tradeId: id } });
-  if (tagIds.length > 0) {
+  // Sama seperti pada pembuatan: tag orang lain tidak boleh ikut menempel.
+  const ownedTagIds = await filterOwnedTagIds(tagIds, session.user.id);
+  if (ownedTagIds.length > 0) {
     await prisma.tradeTag.createMany({
-      data: tagIds.map((tagId) => ({ tradeId: id, tagId })),
+      data: ownedTagIds.map((tagId) => ({ tradeId: id, tagId })),
     });
   }
 

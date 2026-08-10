@@ -80,6 +80,8 @@ export interface TradeFormValues {
   tradeMarketType: string | null;
   setup: string | null;
   notes: string | null;
+  emotionBefore: number | null;
+  emotionAfter: number | null;
   tagIds: string[];
 }
 
@@ -132,6 +134,12 @@ export function TradeTicket({
   const [entryMode, setEntryMode] = useState(trade?.entryMode ?? "SINGLE");
   const [marginMode, setMarginMode] = useState(trade?.marginMode ?? "ISOLATED");
   const [tradeAssetType, setTradeAssetType] = useState(trade?.tradeMarketType ?? "");
+
+  // Tag dan emosi tidak bisa diwakili <input>, jadi ketiganya stateful —
+  // sisanya tetap uncontrolled seperti semula.
+  const [tagIds, setTagIds] = useState<string[]>(trade?.tagIds ?? []);
+  const [emotionBefore, setEmotionBefore] = useState<number | null>(trade?.emotionBefore ?? null);
+  const [emotionAfter, setEmotionAfter] = useState<number | null>(trade?.emotionAfter ?? null);
 
   const [summary, setSummary] = useState<TicketSummary>({
     netProfit: trade?.netProfit ?? trade?.grossProfit ?? null,
@@ -210,7 +218,9 @@ export function TradeTicket({
       setup: get("setup") || null,
       notes: get("notes") || null,
       tradeMarketType: isMultiAsset ? (tradeAssetType || null) : null,
-      tagIds: trade?.tagIds ?? [],
+      tagIds,
+      emotionBefore,
+      emotionAfter,
     };
 
     // Market-specific fields
@@ -512,7 +522,15 @@ export function TradeTicket({
               </TabsContent>
 
               <TabsContent value="notes" keepMounted className="mt-3">
-                <NotesFields trade={trade} />
+                <NotesFields
+                  trade={trade}
+                  tagIds={tagIds}
+                  onTagIdsChange={setTagIds}
+                  emotionBefore={emotionBefore}
+                  onEmotionBeforeChange={setEmotionBefore}
+                  emotionAfter={emotionAfter}
+                  onEmotionAfterChange={setEmotionAfter}
+                />
               </TabsContent>
             </Tabs>
           </div>
