@@ -41,3 +41,9 @@ yarn-error.log*
 next-env.d.ts
 
 /src/generated/prisma
+
+.vercel
+.env*
+
+# Supabase CLI local state
+supabase/.temp/
