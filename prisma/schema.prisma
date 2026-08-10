@@ -35,6 +35,7 @@ model User {
   blogPosts       BlogPost[]
   analysisReports TradeAnalysisReport[]
   tokenPurchases  TokenPurchase[]
+  tokenGrantsGiven TokenPurchase[] @relation("TokenGrantIssuer")
 }
 
 // ─── Blog ────────────────────────────────────────────────────────────────────
@@ -237,18 +238,28 @@ enum TokenPurchaseStatus {
   REJECTED
 }
 
-// Token purchases are per-user (shared wallet across all trading accounts)
+// Token purchases are per-user (shared wallet across all trading accounts).
+//
+// Two ways a row gets here:
+//   grantedById = null  -> pengguna mengajukan sendiri, admin menyetujui
+//   grantedById != null -> admin menambahkan langsung setelah pembayaran di luar aplikasi
 model TokenPurchase {
-  id        String              @id @default(cuid())
-  userId    String
-  quantity  Int
-  status    TokenPurchaseStatus @default(PENDING)
-  createdAt DateTime            @default(now())
-  updatedAt DateTime            @updatedAt
+  id          String              @id @default(cuid())
+  userId      String
+  quantity    Int
+  status      TokenPurchaseStatus @default(PENDING)
+  // Rujukan pembayaran pihak ketiga — satu-satunya jejak kenapa token diberikan.
+  note        String?
+  grantedById String?
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Admin yang memberi tetap tercatat walau akunnya kelak dihapus.
+  grantedBy User? @relation("TokenGrantIssuer", fields: [grantedById], references: [id], onDelete: SetNull)
 
   @@index([userId, status])
+  @@index([grantedById])
 }
 
 // ─── Enums ───────────────────────────────────────────────────────────────────

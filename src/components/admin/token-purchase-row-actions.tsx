@@ -63,7 +63,19 @@ export function TokenPurchaseRowActions({ purchase }: { purchase: AdminTokenPurc
             Setujui
           </DropdownMenuItem>
         )}
-        {purchase.status !== "REJECTED" && (
+        {/* Sekali disetujui, membatalkan berarti menarik token yang sudah masuk saldo —
+            beda maksud dengan menolak permintaan yang belum diproses. */}
+        {purchase.status === "APPROVED" && (
+          <DropdownMenuItem
+            className="gap-2"
+            disabled={isPending}
+            onClick={() => patch({ status: "REJECTED" }, `${purchase.quantity} token ${purchase.userName} dicabut`)}
+          >
+            <X className="h-3.5 w-3.5" />
+            Cabut token
+          </DropdownMenuItem>
+        )}
+        {purchase.status === "PENDING" && (
           <DropdownMenuItem
             className="gap-2"
             disabled={isPending}

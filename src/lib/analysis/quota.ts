@@ -59,3 +59,46 @@ export async function getAnalysisQuota(userId: string): Promise<AnalysisQuota> {
     remaining: freeRemaining + purchasedBalance,
   };
 }
+
+export interface TokenLedgerEntry {
+  granted: number;
+  used: number;
+  balance: number;
+}
+
+/**
+ * Saldo token berbayar untuk semua pengguna sekaligus — dipakai halaman admin.
+ *
+ * Rumusnya sama persis dengan getAnalysisQuota(), hanya dikerjakan borongan
+ * lewat dua groupBy supaya tidak menembak database sekali per pengguna.
+ */
+export async function getPurchasedTokenLedger(): Promise<Map<string, TokenLedgerEntry>> {
+  const [grants, used] = await Promise.all([
+    prisma.tokenPurchase.groupBy({
+      by: ["userId"],
+      where: { status: "APPROVED" },
+      _sum: { quantity: true },
+    }),
+    prisma.tradeAnalysisReport.groupBy({
+      by: ["userId"],
+      where: { tokenSource: "PURCHASED" },
+      _count: { _all: true },
+    }),
+  ]);
+
+  const usedByUser = new Map(used.map((r) => [r.userId, r._count._all]));
+  const ledger = new Map<string, TokenLedgerEntry>();
+
+  for (const g of grants) {
+    const granted = g._sum.quantity ?? 0;
+    const spent = usedByUser.get(g.userId) ?? 0;
+    ledger.set(g.userId, { granted, used: spent, balance: Math.max(0, granted - spent) });
+  }
+  // Pengguna yang memakai token tanpa punya baris APPROVED tidak seharusnya ada,
+  // tapi kalau terjadi ia tetap ditampilkan supaya anomalinya kelihatan.
+  for (const [userId, spent] of usedByUser) {
+    if (!ledger.has(userId)) ledger.set(userId, { granted: 0, used: spent, balance: 0 });
+  }
+
+  return ledger;
+}
