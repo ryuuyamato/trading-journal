@@ -8,7 +8,7 @@ import {
   SelectTrigger,
 } from "@/components/ui/select";
 import { Field } from "@/components/trades/ticket-fields/field";
-import type { TradeFormValues } from "@/components/trades/trade-ticket";
+import type { TradeDraft } from "@/components/trades/trade-ticket";
 import {
   isCryptoFutures,
   isForexOrCommodity,
@@ -22,7 +22,7 @@ interface MarketFieldsProps {
   entryMode: string;
   marginMode: string;
   onMarginModeChange: (v: string) => void;
-  trade?: TradeFormValues;
+  trade?: TradeDraft;
 }
 
 export function MarketFields({

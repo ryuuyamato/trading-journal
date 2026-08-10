@@ -2,7 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/trades/ticket-fields/field";
-import type { TradeFormValues } from "@/components/trades/trade-ticket";
+import type { TradeDraft } from "@/components/trades/trade-ticket";
 import { isForexOrCommodity, numStr } from "@/lib/trade-form";
 
 export function PnlFields({
@@ -12,7 +12,7 @@ export function PnlFields({
 }: {
   marketType: string;
   entryMode: string;
-  trade?: TradeFormValues;
+  trade?: TradeDraft;
 }) {
   return (
     <div className="space-y-3">

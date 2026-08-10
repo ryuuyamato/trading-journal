@@ -83,15 +83,29 @@ export interface TradeFormValues {
   tagIds: string[];
 }
 
-interface TradeTicketProps {
+// What the field components render defaults from: every value optional, because
+// a new trade may start blank or from a calculator draft.
+export type TradeDraft = Partial<TradeFormValues>;
+
+interface TradeTicketBaseProps {
   accounts: Account[];
-  mode: "create" | "edit";
-  trade?: TradeFormValues;
   // Edit mode is always controlled externally (e.g. opened from a row action menu) —
   // no built-in trigger is rendered, the parent owns `open`/`onOpenChange`.
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
 }
+
+// Editing needs a real trade; creating may be seeded with a partial draft — the
+// lot calculator hands one over. Discriminating on `mode` keeps `trade.id`
+// guaranteed on the edit path, which is the only place it is read.
+//
+// Note for callers passing a draft: defaults are read on mount and the ticket
+// stays mounted while closed, so a changed draft needs a changed `key`.
+type TradeTicketProps = TradeTicketBaseProps &
+  (
+    | { mode: "create"; trade?: Partial<TradeFormValues> }
+    | { mode: "edit"; trade: TradeFormValues }
+  );
 
 interface TicketSummary {
   netProfit: number | null;
