@@ -110,7 +110,7 @@ export function AccountFormDialog({ mode, account, open: openProp, onOpenChange 
         <Label>Tipe Market *</Label>
         <Select value={marketType} onValueChange={(v) => v && setMarketType(v)}>
           <SelectTrigger>
-            <span className="flex flex-1 text-left text-sm">
+            <span className="min-w-0 flex-1 truncate text-left text-sm">
               {marketType
                 ? MARKET_TYPES.find((m) => m.value === marketType)?.label
                 : <span className="text-muted-foreground">Pilih tipe market</span>
@@ -136,7 +136,7 @@ export function AccountFormDialog({ mode, account, open: openProp, onOpenChange 
           <Label>Mata Uang</Label>
           <Select value={currency} onValueChange={(v) => v && setCurrency(v)}>
             <SelectTrigger>
-              <span className="flex flex-1 text-left text-sm">{currency}</span>
+              <span className="min-w-0 flex-1 truncate text-left text-sm">{currency}</span>
             </SelectTrigger>
             <SelectContent>
               {CURRENCIES.map((c) => (

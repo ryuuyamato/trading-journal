@@ -168,7 +168,7 @@ export function MarketFields({
           <Field label="Margin Mode">
             <Select value={marginMode} onValueChange={(v) => v && onMarginModeChange(v as string)}>
               <SelectTrigger className="w-full">
-                <span className="flex flex-1 text-left text-sm">
+                <span className="min-w-0 flex-1 truncate text-left text-sm">
                   {marginMode === "ISOLATED" ? "Isolated" : "Cross"}
                 </span>
               </SelectTrigger>

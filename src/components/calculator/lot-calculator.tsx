@@ -232,11 +232,11 @@ export function LotCalculator({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <h1 className="font-display text-[17px] font-semibold tracking-tight">
             Kalkulator Lot &amp; Risiko
           </h1>
-          <p className="num mt-0.5 text-[11px] text-muted-foreground">
+          <p className="num mt-0.5 text-[11px] wrap-break-word text-muted-foreground">
             {inst.symbol} · 1.00 lot = {(parseFloat(contractSize) || 0).toLocaleString("en-US")} unit ·
             1 pip = {pipSize} · nilai pip = {fmtMoney(plan.pipValuePerLot)} per lot
             {inst.quote !== "USD" ? ` · quote ${inst.quote}` : ""}
@@ -251,7 +251,7 @@ export function LotCalculator({
       {plan.warnings.length > 0 && (
         <div className="flex gap-2 rounded-lg border border-primary/40 bg-primary/10 px-3 py-2.5">
           <AlertTriangle className="mt-0.5 size-4 shrink-0 text-brand-ink" />
-          <ul className="space-y-1 text-[11.5px] leading-relaxed">
+          <ul className="min-w-0 space-y-1 text-[11.5px] leading-relaxed wrap-break-word">
             {plan.warnings.map((w) => (
               <li key={w}>{w}</li>
             ))}
@@ -259,15 +259,22 @@ export function LotCalculator({
         </div>
       )}
 
+      {/* min-w-0 on the columns is load-bearing: a grid item defaults to
+          min-width:auto, so without it the widest child (the result tables)
+          sets the column width and the whole page scrolls sideways instead of
+          the table scrolling inside itself. */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:items-start">
         {/* ══ INPUT ══════════════════════════════════════════════════ */}
-        <section className="space-y-4 rounded-lg border border-border bg-card p-4">
+        <section className="min-w-0 space-y-4 rounded-lg border border-border bg-card p-4">
           <SectionLabel>Instrumen</SectionLabel>
 
           <CalcField label="Pilih pair / komoditas / indeks">
             <Select value={instKey} onValueChange={(v) => v && setInstKey(v as string)}>
               <SelectTrigger className="w-full">
-                <span className="num flex flex-1 text-left text-sm">{inst.symbol}</span>
+                {/* SelectTrigger sets whitespace-nowrap, so a long label like
+                    "HK50 · HangSeng" would widen the control instead of
+                    clipping unless this shrinks. */}
+                <span className="num min-w-0 flex-1 truncate text-left text-sm">{inst.symbol}</span>
               </SelectTrigger>
               <SelectContent className="max-h-80">
                 {Object.entries(INSTRUMENT_GROUPS).map(([groupName, items]) => (
@@ -328,10 +335,8 @@ export function LotCalculator({
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <span className="flex flex-1 text-left text-sm">
-                    {account
-                      ? `${account.name} (${account.currency})`
-                      : "Isi modal manual"}
+                  <span className="min-w-0 flex-1 truncate text-left text-sm">
+                    {account ? `${account.name} (${account.currency})` : "Isi modal manual"}
                   </span>
                 </SelectTrigger>
                 <SelectContent>
@@ -621,15 +626,15 @@ export function LotCalculator({
         </section>
 
         {/* ══ HASIL ══════════════════════════════════════════════════ */}
-        <section className="space-y-4 rounded-lg border border-border bg-card p-4">
+        <section className="min-w-0 space-y-4 rounded-lg border border-border bg-card p-4">
           <SectionLabel>Rekomendasi posisi</SectionLabel>
 
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <p className="num font-display text-[46px] leading-none font-semibold text-primary">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <p className="num font-display text-[38px] leading-none font-semibold text-primary md:text-[46px]">
               {fmtLot(plan.totalLot)}
               <span className="ml-2 text-[15px] font-normal text-muted-foreground">lot total</span>
             </p>
-            <div className="num text-right text-[11px] leading-relaxed text-muted-foreground">
+            <div className="num min-w-0 text-left text-[11px] leading-relaxed wrap-break-word text-muted-foreground sm:text-right">
               <span
                 className={cn(
                   "inline-block rounded-sm border px-2 py-0.5 text-[11px] font-bold tracking-[0.14em]",

@@ -57,7 +57,10 @@ export function PriceRail({
   const TRACK_LEFT = "left-20 md:left-28";
 
   return (
-    <div className="relative my-6 h-80 md:h-90">
+    // overflow-hidden matters: the rows are absolutely positioned, and without
+    // clipping their trailing text would extend past the card and drag the
+    // whole page into horizontal scroll on a narrow screen.
+    <div className="relative my-6 h-80 overflow-hidden md:h-90">
       <div className={cn("absolute top-0 bottom-0 w-px bg-border", TRACK_LEFT)} />
 
       {showZone && (
@@ -92,8 +95,14 @@ export function PriceRail({
           >
             <span className={cn(LABEL, "num text-[10px] text-profit")}>TP{step.level}</span>
             <span className="-ml-0.5 h-0.5 w-6 shrink-0 bg-profit" />
-            <span className="num pl-3 text-[10.5px] text-profit">
-              {price(step.price)} · P{step.legIndex + 1} close {formatLot(step.lot)} lot
+            <span className="num min-w-0 truncate pl-3 text-[10.5px] text-profit">
+              {price(step.price)}
+              {/* The "which leg closes here" detail is in the ladder table too,
+                  so it is the first thing dropped when width is tight. */}
+              <span className="hidden sm:inline">
+                {" "}
+                · P{step.legIndex + 1} close {formatLot(step.lot)} lot
+              </span>
             </span>
           </div>
         ))}
@@ -123,12 +132,12 @@ export function PriceRail({
             />
             <span
               className={cn(
-                "num pl-3 text-[10.5px]",
+                "num min-w-0 truncate pl-3 text-[10.5px]",
                 leg.isRunner ? "text-profit" : "text-muted-foreground"
               )}
             >
               {price(leg.price)} · {formatLot(leg.lot)} lot
-              {leg.isRunner ? " · runner" : ""}
+              {leg.isRunner && <span className="hidden sm:inline"> · runner</span>}
             </span>
           </div>
         ))}
@@ -195,8 +204,12 @@ function RailMark({
       <span
         className={cn("size-2.5 shrink-0 -translate-x-1/2 rounded-full border border-card", dot)}
       />
-      <span className={cn("num pl-2 text-[14px] font-semibold", color)}>{value}</span>
-      <span className="num truncate pl-2.5 text-[10.5px] text-muted-foreground">{sub}</span>
+      <span className={cn("num shrink-0 pl-2 text-[14px] font-semibold", color)}>{value}</span>
+      {/* Pip distance and money are repeated in the stats grid, so on a phone
+          the price itself is what stays. */}
+      <span className="num hidden min-w-0 truncate pl-2.5 text-[10.5px] text-muted-foreground sm:inline">
+        {sub}
+      </span>
     </div>
   );
 }

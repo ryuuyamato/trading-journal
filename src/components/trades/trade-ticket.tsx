@@ -333,7 +333,7 @@ export function TradeTicket({
                 }}
               >
                 <SelectTrigger className="w-full">
-                  <span className="flex flex-1 text-left text-sm">
+                  <span className="min-w-0 flex-1 truncate text-left text-sm">
                     {selectedAccount ? (
                       `${selectedAccount.name} (${selectedAccount.currency})`
                     ) : (
@@ -358,7 +358,7 @@ export function TradeTicket({
                   onValueChange={(v) => v && setTradeAssetType(v as string)}
                 >
                   <SelectTrigger className="w-full">
-                    <span className="flex flex-1 text-left text-sm">
+                    <span className="min-w-0 flex-1 truncate text-left text-sm">
                       {tradeAssetType ? (
                         TRADE_ASSET_TYPES.find((t) => t.value === tradeAssetType)?.label
                       ) : (
@@ -424,7 +424,7 @@ export function TradeTicket({
               <Field label="Mode Entry">
                 <Select value={entryMode} onValueChange={(v) => v && setEntryMode(v as string)}>
                   <SelectTrigger className="w-full">
-                    <span className="flex flex-1 text-left text-sm">
+                    <span className="min-w-0 flex-1 truncate text-left text-sm">
                       {entryMode === "SINGLE" ? "Single Entry" : "Multi-Layer (Grid/Averaging)"}
                     </span>
                   </SelectTrigger>

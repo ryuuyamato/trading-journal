@@ -74,7 +74,7 @@ export function PlanStats({
         sub={balanceUsd ? `+${pct(plan.full.profitUsd)}` : undefined}
       />
 
-      <div className="col-span-2 bg-card px-3.5 py-3">
+      <div className="col-span-2 min-w-0 bg-card px-3.5 py-3">
         <p className="text-[10px] tracking-[0.13em] text-muted-foreground uppercase">
           {plan.legs.length > 1
             ? "Risk : Reward efektif — skenario semua layer terisi"
@@ -111,17 +111,21 @@ function Stat({
   tone?: "profit" | "loss";
 }) {
   return (
-    <div className="bg-card px-3.5 py-3">
+    <div className="min-w-0 bg-card px-3.5 py-3">
       <p className="text-[10px] tracking-[0.13em] text-muted-foreground uppercase">{label}</p>
       <p
         className={cn(
-          "num mt-1 text-[16px] font-semibold",
+          "num mt-1 truncate text-[16px] font-semibold",
           tone === "profit" ? "text-profit" : tone === "loss" ? "text-loss" : "text-foreground"
         )}
       >
         {value}
       </p>
-      {sub && <p className="num mt-1 text-[10.5px] leading-relaxed text-muted-foreground">{sub}</p>}
+      {sub && (
+        <p className="num mt-1 text-[10.5px] leading-relaxed wrap-break-word text-muted-foreground">
+          {sub}
+        </p>
+      )}
     </div>
   );
 }
