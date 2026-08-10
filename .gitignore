@@ -44,6 +44,8 @@ next-env.d.ts
 
 .vercel
 .env*
+# Template tanpa rahasia — justru harus ikut supaya env yang dibutuhkan terdokumentasi.
+!.env.example
 
 # Supabase CLI local state
 supabase/.temp/
