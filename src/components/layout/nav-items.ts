@@ -11,6 +11,7 @@ import {
   Newspaper,
   ShieldCheck,
   Settings,
+  Calculator,
   type LucideIcon,
 } from "lucide-react";
 
@@ -26,6 +27,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/trades", label: "Jurnal", icon: BookOpen },
   { href: "/accounts", label: "Akun", icon: Wallet },
+  { href: "/kalkulator", label: "Kalkulator", icon: Calculator },
   { href: "/calendar", label: "Kalender Ekonomi", icon: Calendar },
   { href: "/no-trade-days", label: "No Trade Day", icon: CalendarOff },
   { href: "/analisis-ai", label: "Analisis AI", icon: Sparkles },

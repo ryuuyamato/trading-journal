@@ -2,10 +2,10 @@
 
 import { Input } from "@/components/ui/input";
 import { Field } from "@/components/trades/ticket-fields/field";
-import type { TradeFormValues } from "@/components/trades/trade-ticket";
+import type { TradeDraft } from "@/components/trades/trade-ticket";
 import { numStr } from "@/lib/trade-form";
 
-export function RiskFields({ trade }: { trade?: TradeFormValues }) {
+export function RiskFields({ trade }: { trade?: TradeDraft }) {
   return (
     <div className="grid grid-cols-3 gap-3">
       <Field label="Stop Loss" htmlFor="stopLoss">
