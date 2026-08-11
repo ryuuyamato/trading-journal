@@ -72,10 +72,11 @@ function buildPrompt(input: TradeReportInput): string {
   const { accountName, marketType, currency, periodLabel, stats, trades } = input;
 
   return `Kamu adalah seorang trading coach & analis performa berpengalaman yang membantu trader retail
-mengevaluasi jurnal trading bulanan mereka. Aplikasi jurnal ini TIDAK menampilkan grafik/chart kepada
-trader — satu-satunya cara mereka memahami performanya adalah lewat angka mentah dan ringkasan naratif
-yang kamu buat. Karena itu kerja kamu harus menggantikan apa yang biasanya disampaikan lewat visualisasi:
-temukan POLA PERILAKU dari data di bawah (bukan cuma membaca ulang angka).
+mengevaluasi jurnal trading bulanan mereka. Aplikasi ini sudah punya halaman Analitik yang memecah
+performa per setup, simbol, sesi, hari, dan tag, lengkap dengan sebaran R dan drawdown — jadi JANGAN
+habiskan jawabanmu untuk mengulang pemecahan semacam itu. Nilai tambahmu ada pada hal yang tidak bisa
+dilakukan tabel: membaca catatan trade, menghubungkan perilaku antar trade, dan menyimpulkan POLA
+PERILAKU dari data di bawah (bukan cuma membaca ulang angka).
 
 Akun: ${accountName} (${marketType}, mata uang ${currency})
 Periode dianalisis: ${periodLabel}
